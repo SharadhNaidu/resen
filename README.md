@@ -1,19 +1,26 @@
-# resenh
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SharadhNaidu/resen/main/assets/logo-dark.png">
+    <img src="https://raw.githubusercontent.com/SharadhNaidu/resen/main/assets/logo-light.png" alt="resenh" width="300">
+  </picture>
+</p>
 
-**Robust low-light image restoration and enhancement.** resenh brightens dark, noisy photos
-without blowing out lamps, amplifying noise or inventing colour. An adaptive classical pipeline
-and a transformer network run side by side, and a quality controller decides, photo by photo,
-how much to trust each one.
+<p align="center"><b>Robust low-light image restoration and enhancement.</b><br>
+Photos from the dark, brought back to life: no blown-out lamps, no amplified noise, no invented colour.</p>
 
-[![PyPI](https://img.shields.io/pypi/v/resenh?color=6A88E2&label=pypi)](https://pypi.org/project/resenh/)
-[![Live demo](https://img.shields.io/badge/demo-resenh.sharadh.blog-F7862A)](https://resenh.sharadh.blog)
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb)
-[![Tests](https://github.com/SharadhNaidu/resen/actions/workflows/tests.yml/badge.svg)](https://github.com/SharadhNaidu/resen/actions/workflows/tests.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-1E2033)](https://github.com/SharadhNaidu/resen/blob/main/LICENSE)
+<p align="center">
+  <a href="https://pypi.org/project/resenh/"><img src="https://img.shields.io/pypi/v/resenh?color=6A88E2&label=pypi" alt="PyPI"></a>
+  <a href="https://resenh.sharadh.blog"><img src="https://img.shields.io/badge/demo-resenh.sharadh.blog-F7862A" alt="Live demo"></a>
+  <a href="https://huggingface.co/SharadhNaiduTrains/resenh"><img src="https://img.shields.io/badge/weights-Hugging%20Face-FDC58A" alt="Weights"></a>
+  <a href="https://colab.research.google.com/github/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a>
+  <a href="https://github.com/SharadhNaidu/resen/actions/workflows/tests.yml"><img src="https://github.com/SharadhNaidu/resen/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/SharadhNaidu/resen/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-1E2033" alt="MIT"></a>
+</p>
 
-| Input, as captured | resenh |
-|---|---|
-| ![dark input](https://raw.githubusercontent.com/SharadhNaidu/resen/main/report/fig/lime_1_input.jpg) | ![restored](https://raw.githubusercontent.com/SharadhNaidu/resen/main/report/fig/lime_1_hybrid.jpg) |
+<a href="https://resenh.sharadh.blog"><img src="https://raw.githubusercontent.com/SharadhNaidu/resen/main/assets/banner.png" alt="resenh: dark photo before, restored photo after" width="100%"></a>
+
+An adaptive classical pipeline and a transformer network run side by side, and a quality
+controller decides, photo by photo, how much to trust each one.
 
 **Try it:** [resenh.sharadh.blog](https://resenh.sharadh.blog). It runs entirely in your
 browser, so your photo is never uploaded. ·
@@ -28,6 +35,8 @@ browser, so your photo is never uploaded. ·
 [Releases](#releases) · [Reproduce](#reproduce) · [Team](#team) · [Credits](#credits)
 
 ## How it works
+
+![Measure, restore twice, judge and fuse](https://raw.githubusercontent.com/SharadhNaidu/resen/main/assets/how-it-works.png)
 
 ![resenh architecture](https://raw.githubusercontent.com/SharadhNaidu/resen/main/docs/architecture.svg)
 
@@ -160,6 +169,7 @@ bash deploy/build_web.sh && (cd site && npm ci && npm run build) && npx wrangler
 | In-browser models (`resenh-web-hybrid.onnx`, `resenh-web-dl.onnx`, 6.8 MB each) | same repository, `web/`; built by `deploy/export_onnx.py` |
 | Technical report | [`report/resenh_report_T46.pdf`](https://github.com/SharadhNaidu/resen/blob/main/report/resenh_report_T46.pdf), built by `report/build_report.py` |
 | Evaluation tables, ablation | [`eval_P1_T46.md`](https://github.com/SharadhNaidu/resen/blob/main/eval_P1_T46.md), [`docs/ablation.md`](https://github.com/SharadhNaidu/resen/blob/main/docs/ablation.md) |
+| Logo, banner, illustrations | `assets/` (rendered by `assets/build_assets.py` from the site's design system) |
 | Architecture diagram | [`docs/architecture.svg`](https://github.com/SharadhNaidu/resen/blob/main/docs/architecture.svg) |
 | Figures and example photos | `report/fig/`, `docs/figures/`, `site/public/examples/` (from the public DICM, LIME, MEF, NPE and VV test sets) |
 | Quickstart notebook | [`notebooks/quickstart.ipynb`](https://github.com/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb) |

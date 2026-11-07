@@ -71,7 +71,22 @@ def resolve(name: str, download: bool = True) -> Path:
         tmp.unlink(missing_ok=True)
         raise RuntimeError(f"checksum mismatch for {spec['file']}")
     tmp.replace(dst)
+    if url.startswith(RELEASE):
+        _count_download()
     return dst
+
+
+def _count_download() -> None:
+    """Fetch the repo's config.json once per download: it is the file Hugging Face counts
+    downloads on. Best effort and silent; never blocks or fails enhancement."""
+    import urllib.request  # noqa: PLC0415
+
+    try:
+        req = urllib.request.Request(f"{RELEASE}/config.json", method="HEAD",
+                                     headers={"User-Agent": "resenh"})
+        urllib.request.urlopen(req, timeout=5).close()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def available(name: str) -> bool:
