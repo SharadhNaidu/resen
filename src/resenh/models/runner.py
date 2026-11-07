@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import cv2
 import numpy as np
 
@@ -59,9 +61,54 @@ def _infer(model, has_priors, device, img: np.ndarray) -> np.ndarray:
         p = compute_priors(img)
         pr = torch.from_numpy(np.ascontiguousarray(p.transpose(2, 0, 1)))[None].to(device)
         pr = F.pad(pr, (0, pw, 0, ph), mode="reflect")
+    tile = int(os.environ.get("RESENH_TILE", 0))
     with torch.inference_mode():
-        out = model(x, pr) if has_priors else model(x)
+        if tile and x.shape[2] * x.shape[3] > tile * tile:
+            out = _tiled(model, x, pr, tile)
+        else:
+            out = model(x, pr) if has_priors else model(x)
     return out[0, :, :h, :w].clamp(0, 1).permute(1, 2, 0).float().cpu().numpy()
+
+
+def _tiled(model, x, pr, tile: int, overlap: int = 32):
+    """Memory-bounded inference on overlapping tiles, blended with linear ramps.
+
+    Used only when ``RESENH_TILE`` is set (low-memory servers); peak memory then scales with the
+    tile, not the image. Benchmark numbers are computed without tiling.
+    """
+    import torch  # noqa: PLC0415
+
+    tile = max(64, tile // 8 * 8)
+    _, _, H, W = x.shape
+    out = torch.zeros_like(x)
+    acc = torch.zeros((1, 1, H, W), dtype=x.dtype, device=x.device)
+    step = tile - overlap
+    ys = list(range(0, max(H - tile, 0) + 1, step)) or [0]
+    xs = list(range(0, max(W - tile, 0) + 1, step)) or [0]
+    if ys[-1] + tile < H:
+        ys.append(H - tile)
+    if xs[-1] + tile < W:
+        xs.append(W - tile)
+    for y0 in ys:
+        for x0 in xs:
+            th, tw = min(tile, H), min(tile, W)
+            sl = (..., slice(y0, y0 + th), slice(x0, x0 + tw))
+            o = model(x[sl], pr[sl]) if pr is not None else model(x[sl])
+            wy = torch.ones(th, device=x.device)
+            wx = torch.ones(tw, device=x.device)
+            r = torch.linspace(0.05, 1, overlap, device=x.device)
+            if y0 > 0:
+                wy[:overlap] = r
+            if y0 + th < H:
+                wy[-overlap:] = r.flip(0)
+            if x0 > 0:
+                wx[:overlap] = r
+            if x0 + tw < W:
+                wx[-overlap:] = r.flip(0)
+            wgt = (wy[:, None] * wx[None, :])[None, None]
+            out[sl] += o * wgt
+            acc[sl] += wgt
+    return out / acc
 
 
 def enhance_net(img: np.ndarray, name: str, device: str = "auto", max_side: int = 0,

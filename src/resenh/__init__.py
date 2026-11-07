@@ -8,7 +8,7 @@
 from resenh.io import ImageInputError, load_image, save_image
 from resenh.pipeline import MODES, EnhanceResult, enhance
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.1.0"
 
 __all__ = ["enhance", "EnhanceResult", "MODES", "load_image", "save_image", "ImageInputError",
            "__version__"]

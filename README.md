@@ -10,11 +10,9 @@ noise or inventing colours. It combines three things:
 - **A quality controller:** checks every candidate output for over-exposure, colour shift,
   detail loss and noise amplification, and fuses them.
 
-![architecture](docs/architecture.svg)
+![architecture](https://raw.githubusercontent.com/SharadhNaidu/resen/main/docs/architecture.svg)
 
-| Input | Classical branch | Hybrid (final) |
-|---|---|---|
-| ![](docs/figures/example_lime.jpg) | | |
+**Live demo (runs in your browser):** https://resenh.sharadh.blog
 
 ## Install
 
@@ -53,8 +51,8 @@ resenh app                                         # web UI at http://localhost:
 
 ## Results
 Full tables with all metrics and 95% bootstrap CIs are in
-[`eval_P1_T01.md`](eval_P1_T01.md). The ablation is in [`docs/ablation.md`](docs/ablation.md)
-and the failure analysis in [`docs/failures.md`](docs/failures.md).
+[`eval_P1_T01.md`](https://github.com/SharadhNaidu/resen/blob/main/eval_P1_T01.md). The ablation is in [`docs/ablation.md`](https://github.com/SharadhNaidu/resen/blob/main/docs/ablation.md)
+and the failure analysis in [`docs/failures.md`](https://github.com/SharadhNaidu/resen/blob/main/docs/failures.md).
 
 **Protocol.**
 - Plain RGB PSNR. No GT-mean correction and no test-time brightness knobs.
@@ -99,7 +97,7 @@ pytest
   DICM, LIME, MEF, NPE and VV.
 
 ## Limitations and responsible use
-See the [design document §8](docs/design.md#8-limitations-and-ethics). In short, enhanced
+See the [design document §8](https://github.com/SharadhNaidu/resen/blob/main/docs/design.md#8-limitations-and-ethics). In short, enhanced
 images can contain hallucinated detail and **must not be used as forensic evidence**. The
 training data is small and mostly indoor.
 

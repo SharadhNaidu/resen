@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "resenh"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Robust low-light image restoration and enhancement: classical, deep and adaptive hybrid pipelines."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,7 +34,10 @@ dev = ["pytest>=8.0", "ruff>=0.5"]
 resenh = "resenh.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/SharadhNaidu/resen"
+Homepage = "https://resenh.sharadh.blog"
+Source = "https://github.com/SharadhNaidu/resen"
+Issues = "https://github.com/SharadhNaidu/resen/issues"
+Weights = "https://huggingface.co/SharadhNaiduTrains/resenh"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/resenh"]
@@ -44,3 +47,6 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.hatch.build.targets.sdist]
+include = ["src/resenh", "tests", "README.md", "LICENSE", "pyproject.toml"]

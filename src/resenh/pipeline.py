@@ -54,7 +54,7 @@ def _default_model(kind: str) -> str:
 
 def enhance(img, mode: str = "auto", model: str | None = None, device: str = "auto",
             max_side: int = 1280, tta: bool = False, preset: str = "robust",
-            disable: frozenset[str] = frozenset()) -> EnhanceResult:
+            disable: frozenset[str] = frozenset(), net_fn=None) -> EnhanceResult:
     """Enhance a low-light image.
 
     Args:
@@ -70,6 +70,9 @@ def enhance(img, mode: str = "auto", model: str | None = None, device: str = "au
             (best on clean benchmark images such as LOL).
         disable: stage names to switch off (ablation): classical stages plus
             ``"controller"`` (use network output only), ``"highlights"`` and ``"noise_gate"``.
+        net_fn: optional replacement for the PyTorch runner, called as
+            ``net_fn(img, name, device=..., max_side=..., tta=...)`` and returning an RGB float
+            image of the same size. Used by the in-browser build (ONNX Runtime Web).
     """
     if preset not in PRESETS:
         raise ValueError(f"preset must be one of {PRESETS}")
@@ -81,7 +84,7 @@ def enhance(img, mode: str = "auto", model: str | None = None, device: str = "au
     params = choose_params(stats)
     timings = {"load_analyze": time.perf_counter() - t0}
 
-    if mode in ("auto", "hybrid", "dl") and not _torch_ok():
+    if mode in ("auto", "hybrid", "dl") and net_fn is None and not _torch_ok():
         warnings.warn("PyTorch not installed: falling back to the classical pipeline "
                       "(pip install 'resenh[dl]' for the hybrid model)", stacklevel=2)
         mode = "classical"
@@ -95,7 +98,8 @@ def enhance(img, mode: str = "auto", model: str | None = None, device: str = "au
         timings["total"] = time.perf_counter() - t0
         return EnhanceResult(out, mode, stats, params, inter, None, timings)
 
-    from resenh.models.runner import enhance_net  # noqa: PLC0415
+    if net_fn is None:
+        from resenh.models.runner import enhance_net as net_fn  # noqa: PLC0415
 
     name = model or _default_model(mode)
     t = time.perf_counter()
@@ -108,7 +112,7 @@ def enhance(img, mode: str = "auto", model: str | None = None, device: str = "au
 
             net_in = denoise(x, gate)
     timings["noise_gate"] = gate
-    net = enhance_net(net_in, name, device=device, max_side=max_side, tta=tta)
+    net = net_fn(net_in, name, device=device, max_side=max_side, tta=tta)
     timings["network"] = time.perf_counter() - t
     if mode == "dl":
         timings["total"] = time.perf_counter() - t0

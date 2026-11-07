@@ -27,3 +27,7 @@ outputs/
 *.pt
 *.safetensors
 *.onnx
+
+# web build artifacts (built by deploy script)
+web/py/
+web/models/
