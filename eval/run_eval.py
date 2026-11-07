@@ -36,7 +36,9 @@ def run_method(method: str, img: np.ndarray, bench: str, max_side: int, tta: boo
         from resenh.models.runner import enhance_net
 
         return enhance_net(img, model, max_side=0, tta=tta)
-    res = resenh.enhance(img, mode=kind, model=model, max_side=max_side, tta=tta)
+    preset = "benchmark" if kind.endswith("-bench") else "robust"
+    res = resenh.enhance(img, mode=kind.removesuffix("-bench"), model=model, max_side=max_side,
+                         tta=tta, preset=preset)
     return res.image
 
 
@@ -67,10 +69,31 @@ def eval_paired(method, pairs, bench, args, out_dir):
     return rows
 
 
+def eval_unpaired(method, paths, bench, args, out_dir):
+    """No ground truth: NIQE plus noise and edge measured against the brightness-matched input."""
+    rows = []
+    run_method(method, load_image(paths[0]), bench, args.max_side, args.tta)
+    for path in paths:
+        x = load_image(path)
+        with M.Timer(cuda_sync=True) as t:
+            p = run_method(method, x, bench, args.max_side, args.tta)
+        ref = M.gain_matched(x, p)
+        rows.append({"image": Path(path).name, "psnr": float("nan"), "ssim": float("nan"),
+                     "lpips": float("nan"), "niqe": M.niqe(p), "latency_s": t.elapsed,
+                     "mp": x.shape[0] * x.shape[1] / 1e6,
+                     "noise_ratio": M.noise_ratio(p, ref), "epi": M.edge_preservation(p, ref)})
+        if args.save_images:
+            d = out_dir / "images" / method.replace(":", "_").replace("/", "_") / bench
+            d.mkdir(parents=True, exist_ok=True)
+            resenh.save_image(p, d / (Path(path).stem + ".png"))
+    return rows
+
+
 def summarize(rows):
     keys = ["psnr", "ssim", "lpips", "niqe", "noise_ratio", "epi"]
     s = {k: float(np.nanmean([r[k] for r in rows])) for k in keys}
-    s["psnr_ci"] = M.bootstrap_ci([r["psnr"] for r in rows])
+    ps = [r["psnr"] for r in rows if np.isfinite(r["psnr"])]
+    s["psnr_ci"] = M.bootstrap_ci(ps) if ps else (float("nan"), float("nan"))
     s["ms_per_mp"] = float(np.mean([r["latency_s"] / r["mp"] for r in rows]) * 1000)
     s["n"] = len(rows)
     return s
@@ -94,7 +117,8 @@ def main():
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for bench in args.bench:
-        pairs = man[bench][args.split]
+        unpaired = bench in man.get("unpaired", {})
+        pairs = man["unpaired"][bench] if unpaired else man[bench][args.split]
         for method in args.methods:
             tag = f"{method}{'+tta' if args.tta else ''}|{bench}|{args.split}"
             f = out / (tag.replace(":", "_").replace("|", "__").replace("/", "_")
@@ -103,7 +127,7 @@ def main():
                 s = json.loads(f.read_text())["summary"]
             else:
                 t0 = time.time()
-                rows = eval_paired(method, pairs, bench, args, out)
+                rows = (eval_unpaired if unpaired else eval_paired)(method, pairs, bench, args, out)
                 s = summarize(rows)
                 f.write_text(json.dumps({"method": method, "bench": bench, "split": args.split,
                                          "tta": args.tta, "summary": s, "rows": rows}, indent=1))

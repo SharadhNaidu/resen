@@ -42,8 +42,9 @@ def read_rgb(path: str) -> np.ndarray:
 
 class PairDataset(Dataset):
     def __init__(self, pairs, patch: int | None, priors: bool, gamma_aug: bool = False,
-                 cache: bool = True):
+                 cache: bool = True, noise_aug: bool = False):
         self.pairs, self.patch, self.priors, self.gamma_aug = pairs, patch, priors, gamma_aug
+        self.noise_aug = noise_aug
         self.cache: dict[int, tuple] = {} if cache else None
 
     def __len__(self):
@@ -63,6 +64,12 @@ class PairDataset(Dataset):
         if self.gamma_aug and self.patch:
             g = random.uniform(0.8, 1.25)
             lo = np.clip(lo, 0, 1) ** g
+        if self.noise_aug and self.patch and random.random() < 0.5:
+            # Poisson-Gaussian sensor noise (read + shot), as in real phone night shots
+            read, shot = random.uniform(0.0, 0.03), random.uniform(0.0, 0.004)
+            lo = lo + np.random.normal(0, 1, lo.shape).astype(np.float32) * np.sqrt(
+                read ** 2 + shot * np.maximum(lo, 0))
+            lo = np.clip(lo, 0, 1).astype(np.float32)
         pr = compute_priors(lo) if self.priors else None
         if self.patch:
             h, w = lo.shape[:2]
@@ -212,6 +219,7 @@ def main():
     ap.add_argument("--w-vgg", type=float, default=0.02)
     ap.add_argument("--w-ssim", type=float, default=0.2)
     ap.add_argument("--gamma-aug", action="store_true")
+    ap.add_argument("--noise-aug", action="store_true")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -258,7 +266,8 @@ def main():
     it, t0 = 0, time.time()
     for patch, bs, frac in stages:
         n_it = int(round(frac * args.iters)) if (patch, bs, frac) != stages[-1] else args.iters - it
-        ds = PairDataset(train, patch, use_priors, gamma_aug=args.gamma_aug, cache=False)
+        ds = PairDataset(train, patch, use_priors, gamma_aug=args.gamma_aug, cache=False,
+                         noise_aug=args.noise_aug)
         dl = DataLoader(ds, batch_size=bs, shuffle=True, num_workers=args.workers, drop_last=True,
                         persistent_workers=args.workers > 0, pin_memory=True)
         end = it + n_it

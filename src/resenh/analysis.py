@@ -112,6 +112,9 @@ def choose_params(s: Stats) -> Params:
         wb_strength=float(np.clip((s.cast_strength - 0.05) / 0.25, 0.0, 0.8)),
         # the spatial mask in protect_highlights localises the effect, so even a tiny lamp
         # gets full protection (networks trained on LOL hallucinate colour in clipped sources)
-        highlight_protect=1.0 if s.highlight_frac > 1e-5 else 0.6,
+        # strongest for small clipped sources (lamps, signs); large clipped areas (sky,
+        # windows) are left to the network. Thresholds checked on val_b.
+        highlight_protect=float(np.clip((0.08 - s.highlight_frac) / 0.05, 0.0, 1.0))
+        if s.highlight_frac > 1e-5 else 0.0,
         dl_weight_hint=float(1.0 if is_low else 0.3),
     )

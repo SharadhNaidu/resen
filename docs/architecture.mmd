@@ -1,0 +1,26 @@
+flowchart TD
+    A["Input image<br/>(path / bytes / PIL / ndarray)"] --> B["Sanitizer · io.py<br/>EXIF rotate, gray/alpha/16-bit → RGB,<br/>size limits, corrupt/HEIC errors"]
+    B --> C["Analyzer · analysis.py<br/>brightness, dark %, highlight %,<br/>Immerkaer noise σ, colour cast, non-uniformity"]
+    C -->|adaptive Params| D
+    C -->|adaptive Params| P
+    subgraph CL["Classical branch · classical/"]
+        D["Guided-filter denoise<br/>(before gain)"] --> E["Illumination map<br/>max-RGB + guided filter (LIME)"]
+        E --> F["Retinex lift  I / L^γ<br/>(γ, gain floor from analyzer)"]
+        F --> G["Noise-adaptive post-denoise<br/>(ε ∝ measured σ²)"]
+        G --> H["CLAHE on Lab-L"] --> I["Gray-world WB → exposure<br/>(filmic shoulder)"]
+    end
+    subgraph DL["Hybrid network · models/"]
+        PR["Classical priors (7 ch)<br/>illumination + LIME + CLAHE"]
+        N["Retinexformer (ICCV'23)<br/>+ zero-init prior inputs<br/>fine-tuned, GT-mean loss"]
+    end
+    PR --> N
+    B --> N
+    B --> PR
+    I --> Q
+    N --> Q["Quality controller · controller.py<br/>guards: new clipping, chroma shift,<br/>edge loss (EPI), noise amp, exposure error<br/>→ softmax fusion (fitted on val_b)"]
+    P["Analyzer prior<br/>(trust network more when low-light)"] --> Q
+    Q --> R["Highlight protection<br/>(dilated mask of bright sources)"]
+    R --> S["Bright-input cap"] --> T["Output + intermediates<br/>+ decision report"]
+    T --> U["CLI · cli.py"]
+    T --> V["Gradio app · app.py"]
+    T --> W["Python API · resenh.enhance()"]
