@@ -2,7 +2,7 @@
  * the network (WebGPU when available, WebAssembly otherwise). Everything stays on the device. */
 
 const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/";
-const ORT = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+const ORT = new URL("ort/", self.location.href).href;  // self-hosted (same origin) so threads work
 
 let py = null;
 let web = null;
@@ -21,13 +21,18 @@ async function init(cfg) {
 
   py = await loadPyodide({ indexURL: PYODIDE });
   progress(30, "Loading NumPy, OpenCV and Pillow");
-  await py.loadPackage(["numpy", "opencv-python", "pillow", "micropip"]);
+  await py.loadPackage(["numpy", "opencv-python", "pillow"]);
   progress(70, "Installing resenh");
-  const micropip = py.pyimport("micropip");
-  await micropip.install.callKwargs(new URL(cfg.wheel, cfg.base).href, { deps: false });
+  // the wheel is pure Python: unpack it straight into site-packages
+  const whl = await (await fetch(new URL(cfg.wheel, cfg.base).href)).arrayBuffer();
+  py.unpackArchive(whl, "wheel");
   web = py.pyimport("resenh.web");
   progress(80, "Loading the neural network");
-  await getSession("resenh-web-hybrid", cfg);
+  const s = await getSession("resenh-web-hybrid", cfg);
+  progress(92, "Warming up");
+  // one tiny run compiles the GPU shaders now, so the first real photo is fast
+  const z = (c) => new ort.Tensor("float32", new Float32Array(c * 64 * 64), [1, c, 64, 64]);
+  await s.run({ x: z(3), priors: z(7) });
   progress(100, "Ready");
   post("ready", { backend, version: py.runPython("import resenh; resenh.__version__") });
 }

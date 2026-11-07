@@ -44,3 +44,38 @@ def panels(intermediates: dict, inp: np.ndarray, out: np.ndarray) -> list[tuple[
     items.append((noise_map(inp), "Noise map (input high-pass)"))
     items.append((out, "Final output"))
     return items
+
+
+def side_by_side(items: list[tuple[np.ndarray, str]], height: int = 480, columns: int = 0):
+    """Labelled images in a row (or a grid with ``columns``), as a PIL image."""
+    from PIL import Image  # noqa: PLC0415
+
+    tiles = []
+    for img, label in items:
+        img = np.clip(img, 0, 1)
+        s = height / img.shape[0]
+        t = cv2.resize(img, (max(1, round(img.shape[1] * s)), height),
+                       interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_LINEAR)
+        t = (t * 255 + 0.5).astype(np.uint8)
+        scale = max(0.4, height / 600)
+        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, scale, 1)
+        cv2.rectangle(t, (0, 0), (tw + 12, th + 12), (0, 0, 0), -1)
+        cv2.putText(t, label, (6, th + 6), cv2.FONT_HERSHEY_SIMPLEX, scale, (255, 255, 255), 1,
+                    cv2.LINE_AA)
+        tiles.append(t)
+    cols = columns or len(tiles)
+    w = max(t.shape[1] for t in tiles)
+    pad = [np.pad(t, ((0, 0), (0, w - t.shape[1]), (0, 0))) if columns else t for t in tiles]
+    rows = []
+    for i in range(0, len(pad), cols):
+        row = pad[i:i + cols]
+        if columns and len(row) < cols:
+            row += [np.zeros_like(pad[0])] * (cols - len(row))
+        gap = np.full((height, 4, 3), 255, np.uint8)
+        rows.append(np.concatenate([x for t in row for x in (t, gap)][:-1], 1))
+    if len(rows) > 1:
+        hgap = np.full((4, rows[0].shape[1], 3), 255, np.uint8)
+        grid = np.concatenate([x for r in rows for x in (r, hgap)][:-1], 0)
+    else:
+        grid = rows[0]
+    return Image.fromarray(grid)

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "resenh"
-version = "0.1.0"
+version = "0.1.1"
 description = "Robust low-light image restoration and enhancement: classical, deep and adaptive hybrid pipelines."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,6 +1,0 @@
-/*
-  Cache-Control: public, max-age=600
-/models/*
-  Cache-Control: public, max-age=86400
-/py/*
-  Cache-Control: public, max-age=600

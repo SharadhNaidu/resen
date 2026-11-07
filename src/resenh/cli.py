@@ -20,15 +20,27 @@ def _cmd_enhance(a) -> int:
     import resenh  # noqa: PLC0415
     from resenh.viz import panels  # noqa: PLC0415
 
-    srcs = [Path(s) for s in a.inputs]
+    srcs = []
+    for s in a.inputs:
+        p = Path(s)
+        if p.is_dir():
+            from resenh.utils import IMAGE_EXTS  # noqa: PLC0415
+
+            srcs += sorted(q for q in p.iterdir() if q.suffix.lower() in IMAGE_EXTS)
+        else:
+            srcs.append(p)
+    if not srcs:
+        print("error: no images found", file=sys.stderr)
+        return 2
     for src in srcs:
         try:
             res = resenh.enhance(src, mode=a.mode, model=a.model, device=a.device,
-                                 max_side=a.max_side, tta=a.tta)
+                                 max_side=a.max_side, tta=a.tta, preset=a.preset)
         except resenh.ImageInputError as e:
             print(f"error: {src}: {e}", file=sys.stderr)
             return 2
-        dst = Path(a.output) if (a.output and len(srcs) == 1) else (
+        single = len(a.inputs) == 1 and not Path(a.inputs[0]).is_dir()
+        dst = Path(a.output) if (a.output and single and Path(a.output).suffix) else (
             Path(a.output or ".") / f"{src.stem}_resenh.png")
         dst.parent.mkdir(parents=True, exist_ok=True)
         resenh.save_image(res.image, dst)
@@ -93,16 +105,18 @@ def _cmd_app(a) -> int:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="resenh", description="Robust low-light image enhancement")
     ap.add_argument("--version", action="version", version=f"resenh {__version__}")
+    ap.add_argument("--env", action="store_true", help="print versions, device and weights")
     sub = ap.add_subparsers(dest="cmd")
 
     e = sub.add_parser("enhance", help="enhance one or more images")
-    e.add_argument("inputs", nargs="+")
-    e.add_argument("-o", "--output", help="output file (single input) or directory")
+    e.add_argument("inputs", nargs="+", help="image files and/or folders")
+    e.add_argument("-o", "--output", help="output file (one input) or folder")
     e.add_argument("--mode", default="auto", choices=["auto", "classical", "dl", "hybrid"])
     e.add_argument("--model", default=None)
     e.add_argument("--device", default="auto")
     e.add_argument("--max-side", type=int, default=1280)
-    e.add_argument("--tta", action="store_true")
+    e.add_argument("--tta", action="store_true", help="x8 self-ensemble (slower)")
+    e.add_argument("--preset", default="robust", choices=["robust", "benchmark"])
     e.add_argument("--save-intermediates", metavar="DIR")
     e.set_defaults(func=_cmd_enhance)
 
@@ -122,6 +136,11 @@ def main(argv=None) -> int:
     p.set_defaults(func=_cmd_app)
 
     a = ap.parse_args(argv)
+    if a.env:
+        from resenh.utils import info  # noqa: PLC0415
+
+        info()
+        return 0
     if not getattr(a, "func", None):
         ap.print_help()
         return 0

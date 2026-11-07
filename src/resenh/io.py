@@ -53,8 +53,22 @@ def _from_array(arr: np.ndarray) -> np.ndarray:
     return np.clip(a, 0.0, 1.0)
 
 
+def _fetch(url: str) -> bytes:
+    import urllib.request  # noqa: PLC0415
+
+    req = urllib.request.Request(url, headers={"User-Agent": "resenh"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:  # noqa: S310 - user-supplied URL
+            return r.read(MAX_PIXELS * 4)
+    except OSError as e:
+        raise ImageInputError(f"could not download {url}: {e}") from e
+
+
 def load_image(src) -> np.ndarray:
-    """Load ``src`` (path, bytes, PIL image or ndarray; arrays are assumed RGB) as RGB float32.
+    """Load an image as RGB float32 in [0, 1].
+
+    ``src`` can be a file path, an ``http(s)://`` URL, raw bytes, a file-like object, a PIL
+    image or a NumPy array (assumed RGB; uint8, uint16 or float).
 
     Applies EXIF orientation, converts gray / alpha / 16-bit inputs, and rejects corrupt,
     empty, tiny or oversized images with :class:`ImageInputError`.
@@ -65,8 +79,12 @@ def load_image(src) -> np.ndarray:
         try:
             if isinstance(src, Image.Image):
                 im = src
-            elif isinstance(src, (bytes, bytearray)):
-                im = Image.open(_io.BytesIO(src))
+            elif isinstance(src, (bytes, bytearray, memoryview)):
+                im = Image.open(_io.BytesIO(bytes(src)))
+            elif hasattr(src, "read"):
+                im = Image.open(_io.BytesIO(src.read()))
+            elif isinstance(src, str) and src.startswith(("http://", "https://")):
+                im = Image.open(_io.BytesIO(_fetch(src)))
             else:
                 p = Path(src)
                 if not p.exists():
@@ -92,8 +110,17 @@ def load_image(src) -> np.ndarray:
 
 
 def to_uint8(img: np.ndarray) -> np.ndarray:
+    """Float [0, 1] image to uint8 [0, 255] (rounded, clipped)."""
     return (np.clip(img, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
 
 
-def save_image(img: np.ndarray, path) -> None:
-    Image.fromarray(to_uint8(img)).save(path)
+def save_image(img: np.ndarray, path) -> Path:
+    """Save a float [0, 1] RGB image; the format follows the extension. Creates folders."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    im = Image.fromarray(to_uint8(img))
+    if path.suffix.lower() in (".jpg", ".jpeg"):
+        im.save(path, quality=95)
+    else:
+        im.save(path)
+    return path

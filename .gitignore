@@ -31,3 +31,11 @@ outputs/
 # web build artifacts (built by deploy script)
 web/py/
 web/models/
+web/ort/
+
+# site build
+site/node_modules/
+site/dist/
+site/public/ort/
+site/public/models/
+site/public/py/

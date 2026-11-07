@@ -97,3 +97,37 @@ def test_bright_input_not_blown_out():
     res = resenh.enhance(x, mode="classical")
     assert not res.params.is_low_light
     assert abs(res.image.mean() - x.mean()) < 0.2
+
+
+# ----------------------------------------------------------------- developer API
+def test_result_api(tmp_path):
+    res = resenh.enhance(dark_image(), mode="classical")
+    assert res.input is not None and res.input.shape == res.image.shape
+    assert res.to_uint8().dtype == np.uint8
+    assert res.to_pil().size == (160, 120)
+    p = res.save(tmp_path / "sub" / "out.jpg")
+    assert p.exists()
+    assert "mode classical" in res.summary()
+    assert "EnhanceResult(" in repr(res)
+    assert res._repr_png_()[:4] == b"\x89PNG"
+    labels = [lab for lab, _ in res.stages]
+    assert labels[0].endswith("Input") and labels[-1] == "Final output"
+
+
+def test_inputs_file_like_and_folder(tmp_path):
+    a = (dark_image() * 255).astype(np.uint8)
+    assert resenh.load_image(io.BytesIO(_png_bytes(a))).shape == (120, 160, 3)
+    for i in range(2):
+        Image.fromarray(a).save(tmp_path / f"im{i}.png")
+    out = resenh.enhance_folder(tmp_path, tmp_path / "out", mode="classical", progress=False)
+    assert len(out) == 2 and all(p.exists() for p in out)
+
+
+def test_cli_env_and_folder(tmp_path, capsys):
+    from resenh.cli import main
+
+    assert main(["--env"]) == 0
+    assert "resenh" in capsys.readouterr().out
+    Image.fromarray((dark_image() * 255).astype(np.uint8)).save(tmp_path / "a.png")
+    assert main(["enhance", str(tmp_path), "-o", str(tmp_path / "o"), "--mode", "classical"]) == 0
+    assert (tmp_path / "o" / "a_resenh.png").exists()

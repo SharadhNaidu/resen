@@ -1,0 +1,9 @@
+// Static in-browser demo (web/) served by Cloudflare Workers static assets.
+// Build the assets first: bash deploy/build_web.sh   then: npx wrangler deploy
+{
+  "name": "resenh",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./site/dist", "not_found_handling": "404-page" },
+  "routes": [{ "pattern": "resenh.sharadh.blog", "custom_domain": true }],
+  "workers_dev": true
+}
