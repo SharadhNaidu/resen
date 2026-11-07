@@ -1,0 +1,29 @@
+# secrets
+.env
+kaggle.json
+*.token
+
+# local-only files
+CLAUDE.md
+Computer Vision Hackathon 2026.pdf
+.remember/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# data, weights, runs
+data/
+weights/
+runs/
+outputs/
+*.pth
+*.pt
+*.safetensors
+*.onnx
