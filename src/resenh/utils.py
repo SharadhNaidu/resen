@@ -28,7 +28,7 @@ def enhance_folder(src, dst, suffix: str = "_resenh", ext: str = ".png", progres
     it = files
     if progress:
         try:
-            from tqdm.auto import tqdm  # noqa: PLC0415
+            from tqdm import tqdm  # noqa: PLC0415
 
             it = tqdm(files, desc="resenh", unit="img")
         except ImportError:
