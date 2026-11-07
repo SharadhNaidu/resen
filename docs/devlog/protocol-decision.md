@@ -47,3 +47,14 @@ val_a PSNR falls as that memorisation is lost, so it cannot be used to pick chec
 - **Decision.** The fine-tuned rows are reported unchanged, as pre-registered. There is no retraining and no re-tuning. Plain-loss retraining is future work.
 - **Added rows, with no pipeline change.** The shipped package configuration (the hybrid pipeline with the public official backbone) had never been tested. It is evaluated once on test and reported next to the fine-tuned rows, and neither is chosen as the headline.
 - **Default model.** It is chosen on LSRW val_b, which no candidate trained on, before any LSRW test run.
+
+## Default-model decision (recorded 09:15 IST, before any LSRW test run)
+LSRW val_b PSNR, hybrid `benchmark` preset:
+- general_light: 19.85
+- official LOL-v2-Real backbone: 18.31
+
+The network alone scores 19.88 vs 18.24. general_light wins by about 1.5 dB and becomes the package default for real photos.
+
+- **Caveat:** general_light trained on LSRW train (other images from the same cameras), so this measures in-domain gain, not cross-camera generalisation.
+- **LOL benchmarks unchanged:** the LOL rows keep their per-benchmark rows.
+- **Test run:** the LSRW test set is scored once for the official and general variants after this entry.

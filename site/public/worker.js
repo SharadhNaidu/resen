@@ -39,7 +39,7 @@ async function init(cfg) {
 
 async function getSession(name, cfg) {
   if (sessions[name]) return sessions[name];
-  const url = new URL(`models/${name}.onnx`, cfg.base).href;
+  const url = new URL(`models/${name}.onnx?v=3`, cfg.base).href;
   const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
   const tries = [];
   if (self.navigator.gpu && !cfg.forceWasm) tries.push("webgpu");

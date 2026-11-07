@@ -46,7 +46,7 @@ export function useEngine() {
   const pending = useRef<null | (() => void)>(null)
 
   useEffect(() => {
-    const w = new Worker("/worker.js?v=2")
+    const w = new Worker("/worker.js?v=3")
     worker.current = w
     w.onmessage = (e: MessageEvent) => {
       const m = e.data

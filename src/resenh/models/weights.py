@@ -18,10 +18,10 @@ REGISTRY: dict[str, dict] = {
     "retinexformer-lolv2-real": {"file": "LOL_v2_real.pth", "sha256": "539bd16c4da6179e45616329f249c4672951b1045193428e1d042c50d4b65a0b", "priors": False},
     "retinexformer-lolv2-syn": {"file": "LOL_v2_synthetic.pth", "sha256": "2f793853c6b1ba0b4a3ff12b7b10f0f2c851eaefda1006437eb3f35229838c4a", "priors": False},
     # resenh hybrid models (filled in after training; sha256 pinned at release time)
-    "resenh-light-lolv1": {"file": "resenh_light_lolv1.pth", "sha256": None, "priors": True},
-    "resenh-light-lolv2-real": {"file": "resenh_light_lolv2_real.pth", "sha256": None, "priors": True},
+    "resenh-light-lolv1": {"file": "resenh_light_lolv1.pth", "sha256": "17859e38b8db9a63b9011a035132d2f2ff15465b6b87d18910276a94e4b00c75", "priors": True},
+    "resenh-light-lolv2-real": {"file": "resenh_light_lolv2_real.pth", "sha256": "ad15ee6b49189dfc5c363ee56ced2b16b00210fd81c8a00660399bc8a0ac6640", "priors": True},
     "resenh-light-lolv2-syn": {"file": "resenh_light_lolv2_syn.pth", "sha256": "a773a0c72fcd2b98590fb54cd3b16a2faa2736c2fb5bdcb60821e627fb30989e", "priors": True},
-    "resenh-light-general": {"file": "resenh_light_general.pth", "sha256": None, "priors": True},
+    "resenh-light-general": {"file": "resenh_light_general.pth", "sha256": "cf67009d2611b84dbbfde65d31c124479fdad7d1bd4e3c93e39a6f12a5c6a373", "priors": True},
 }
 
 DEFAULT_MODEL = "resenh-light-general"

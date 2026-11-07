@@ -14,7 +14,7 @@ from resenh.io import ImageInputError, load_image, save_image
 from resenh.pipeline import MODES, PRESETS, EnhanceResult, enhance
 from resenh.utils import download_weights, enhance_folder, info
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "enhance", "enhance_folder", "EnhanceResult", "MODES", "PRESETS",
