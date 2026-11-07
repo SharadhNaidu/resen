@@ -104,8 +104,10 @@ def enhance(img, mode: str = "auto", model: str | None = None, device: str = "au
     if "controller" in disable:
         out, decision = net, None
     else:
-        prior = {"network": 4.0 * params.dl_weight_hint, "classical": 1.0}
-        out, dec = fuse({"network": net, "classical": cls}, x, params, prior=prior)
+        # prior strength and temperature fitted on val_b of LOL-v1/v2 (never on test)
+        prior = {"network": 256.0 * params.dl_weight_hint, "classical": 1.0}
+        out, dec = fuse({"network": net, "classical": cls}, x, params, prior=prior,
+                        temperature=0.25)
         decision = dec.to_dict()
     if "highlights" not in disable:
         out = protect_highlights(out, x, params.highlight_protect)
