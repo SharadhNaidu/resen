@@ -28,3 +28,11 @@ val_a PSNR falls as that memorisation is lost, so it cannot be used to pick chec
 - **Re-test.** These settings are now frozen. The Syn test was re-run once with them, and the
   earlier (worse) result is kept in this log rather than hidden. No further changes are made to
   post-processing on the basis of test results.
+
+## Preset reporting (recorded ~06:35 IST, before any LOL-v1 / LOL-v2-Real test run of fine-tuned models)
+- Both inference presets are reported in every paired table, with no row picked by test score:
+  - `benchmark` (`hybrid-bench:`): no pre-network denoise gate;
+  - `robust` (`hybrid:`, the package and app default): the val_b-fitted noise gate is on.
+- The comparison table uses the `benchmark` preset as the resenh row. That was fixed from val_b,
+  where the gate cost −0.55 dB on clean inputs. The robust row sits next to it.
+- The stress tests and unseen images use the `robust` preset, which is what ships.

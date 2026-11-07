@@ -21,7 +21,9 @@ MAIN_ROWS = [
     ("Deep learning only: Retinexformer, official checkpoint", "net:retinexformer-{bench}", "DL"),
     ("Hybrid network: Retinexformer + classical priors, fine-tuned (ours)",
      "net:runs/{run}_light/last.pth", "hybrid"),
-    ("**Hybrid full pipeline: network + controller + highlight guard (ours, resenh)**",
+    ("**Hybrid full pipeline, `benchmark` preset: network + controller + highlight guard (ours, resenh)**",
+     "hybrid-bench:runs/{run}_light/last.pth", "hybrid"),
+    ("Hybrid full pipeline, `robust` preset (default; + noise-gated pre-denoise)",
      "hybrid:runs/{run}_light/last.pth", "hybrid"),
 ]
 RUN = {"lolv1": "v1", "lolv2_real": "real", "lolv2_syn": "syn"}
@@ -101,11 +103,14 @@ def main():
           "| Method | LOL-v1 | LOL-v2-Real | LOL-v2-Syn |", "|---|---|---|---|"]
     for name, vals in AUDIT.items():
         L.append(f"| {name} | " + " | ".join(fmt(v, 2) for v in vals) + " |")
-    ours = [load("hybrid:runs/{run}_light/last.pth", b) for b, _ in BENCHES]
+    ours = [load("hybrid-bench:runs/{run}_light/last.pth", b) for b, _ in BENCHES]
+    net = [load("net:runs/{run}_light/last.pth", b) for b, _ in BENCHES]
     rf = [load("net:retinexformer-{bench}", b) for b, _ in BENCHES]
     L.append("| Retinexformer (our re-run) | " + " | ".join(fmt(s and s["psnr"], 2) for s in rf) + " |")
-    L.append("| **resenh hybrid (ours)** | " + " | ".join(fmt(s and s["psnr"], 2) for s in ours)
+    L.append("| resenh network alone (ours) | " + " | ".join(fmt(s and s["psnr"], 2) for s in net)
              + " |")
+    L.append("| **resenh hybrid, benchmark preset (ours)** | "
+             + " | ".join(fmt(s and s["psnr"], 2) for s in ours) + " |")
     L += ["", "Notes: the higher numbers that circulate for these methods (27–31 dB) use GT-mean "
           "correction, test-time knobs, or test sets that overlap LOL-v1 training images. They are "
           "not comparable. On LOL-v1, differences under about 1 dB are inside the 95% CI "
@@ -126,7 +131,7 @@ def main():
                      f"{fmt(n and n['niqe'], 2)} | {fmt(h and h['noise_ratio'], 2)} | "
                      f"{fmt(h and h['epi'], 3)} |")
         L.append("")
-    tta = [load("hybrid:runs/{run}_light/last.pth", b, tta=True) for b, _ in BENCHES]
+    tta = [load("hybrid-bench:runs/{run}_light/last.pth", b, tta=True) for b, _ in BENCHES]
     if any(tta):
         L += ["## Appendix: ×8 self-ensemble (TTA), research row", "",
               "| | LOL-v1 | LOL-v2-Real | LOL-v2-Syn |", "|---|---|---|---|",

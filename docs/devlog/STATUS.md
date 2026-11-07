@@ -6,11 +6,11 @@ Plan: `~/.claude/plans/so-check-out-the-pure-wozniak.md` (7 phases).
 | Phase | State |
 |---|---|
 | 1 Setup and data | done |
-| 2 Classical branch and analyzer | code written, tests green (finishing) |
-| 3 Eval harness, DL branch and controller | code written, baseline eval pending |
-| 4 App, docs, MVP | todo |
-| 5 Train models | running (`training/queue.sh`, logs in `runs/*/train.log`) |
-| 6 Experiments | todo |
+| 2 Classical branch and analyzer | done |
+| 3 Eval harness, DL branch and controller | done (reproduction gate passed) |
+| 4 App, docs, MVP | done (HF deploy blocked on user's HF write token) |
+| 5 Train models | running: queue.sh (v1_light, 3 Syn ablations) → queue2.sh (real_light re-run, general_light) |
+| 6 Experiments | in progress: failures.md written; stress, latency, report pending trained models |
 | 7 Release | todo (PyPI publish needs user confirmation) |
 
 ## Environment
@@ -28,3 +28,9 @@ Plan: `~/.claude/plans/so-check-out-the-pure-wozniak.md` (7 phases).
 
 ## Weights (gitignored, under `weights/`)
 - `weights/retinexformer/{LOL_v1,LOL_v2_real,LOL_v2_synthetic,FiveK}.pth`: official checkpoints from Google Drive via gdown. sha256 values are in `src/resenh/models/weights.py`.
+
+## Contingency (06:45 IST)
+- `real_light` crashed (DataLoader worker hit an attribute error after train.py was edited mid-run). Fixed with `getattr`, and it re-runs first in `training/queue2.sh`.
+- If `general_light` has not finished by the deadline, the app ships with the fallback default `retinexformer-lolv2-real` (FALLBACK in weights.py). Swap it in later as `resenh-light-general`.
+- Do not wait on the GPU queue: report, docs and deploy use whatever checkpoints exist; `eval/make_report.py` prints "(not run)" for missing rows.
+- Frozen-pipeline finding: the clipping guard mis-selects classical on bright daylight Syn scenes. It is not seen on val_b, so it stays as failure case 1 in docs/failures.md. Do not re-tune it.

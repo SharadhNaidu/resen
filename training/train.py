@@ -64,7 +64,7 @@ class PairDataset(Dataset):
         if self.gamma_aug and self.patch:
             g = random.uniform(0.8, 1.25)
             lo = np.clip(lo, 0, 1) ** g
-        if self.noise_aug and self.patch and random.random() < 0.5:
+        if getattr(self, "noise_aug", False) and self.patch and random.random() < 0.5:
             # Poisson-Gaussian sensor noise (read + shot), as in real phone night shots
             read, shot = random.uniform(0.0, 0.03), random.uniform(0.0, 0.004)
             lo = lo + np.random.normal(0, 1, lo.shape).astype(np.float32) * np.sqrt(
