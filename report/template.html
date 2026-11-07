@@ -103,7 +103,7 @@
   .checks li { break-inside: avoid; padding-left: 18px; position: relative; }
   .checks li::before { content: ""; position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border-radius: 3px;
                        background: var(--peri); box-shadow: inset 0 0 0 2px #fff; border: .8px solid var(--peri); }
-  footer { margin-top: 8mm; padding-top: 3mm; border-top: .8px solid var(--rule); font-family: var(--mono); font-size: 7.8pt; color: var(--soft);
+  footer { margin-top: 4mm; padding-top: 3mm; border-top: .8px solid var(--rule); font-family: var(--mono); font-size: 7.8pt; color: var(--soft);
            display: flex; justify-content: space-between; }
   @media screen { body { background: #F4F5FA; } .page { background: #fff; padding: 16mm; margin: 8mm auto; border-radius: 12px; border: .8px solid var(--rule); max-width: 210mm; } }
 </style>
@@ -119,10 +119,10 @@
     resenh
   </div>
   <h1>Robust low-light image restoration and enhancement</h1>
-  <p class="lede">Technical solution report. A classical pipeline and a transformer network run side by side, and a quality controller decides, per photo, how much to trust each.</p>
+  <p class="lede">Technical solution report. Two methods restore each photo, one classical and one learned, and a controller decides how much of each to keep.</p>
   <div class="hero">
     <figure><img src="fig/lime_1_input.jpg" alt="Dark input photo"><figcaption>Input, as captured</figcaption></figure>
-    <figure><img src="fig/lime_1_hybrid.jpg" alt="Restored photo"><figcaption>resenh hybrid: about 6 s in a laptop browser (WebGPU)</figcaption></figure>
+    <figure><img src="fig/lime_1_hybrid.jpg" alt="Restored photo"><figcaption>The same photo after resenh, about 6 s in a laptop browser</figcaption></figure>
   </div>
 </header>
 
@@ -134,41 +134,42 @@
     <div>Sharadh Naidu<span>1RUA24CSE0421</span></div><div>Shivani<span>1RUA24CSE0430</span></div>
     <div>S. V. Swamy<span>1RUA24CSE0468</span></div><div>Sumukha K<span>1RUA24CSE0483</span></div></div></td></tr>
   <tr><td>GitHub repository</td><td><a href="{{REPO}}">github.com/SharadhNaidu/resen</a>, commit <code>{{COMMIT}}</code></td></tr>
-  <tr><td>Live demo</td><td><a href="https://resenh.sharadh.blog">resenh.sharadh.blog</a> (runs in the browser) · <a href="https://pypi.org/project/resenh/">pypi.org/project/resenh</a> · <a href="https://colab.research.google.com/github/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb">Colab notebook</a></td></tr>
+  <tr><td>Live demo</td><td><a href="https://resenh.sharadh.blog">resenh.sharadh.blog</a> runs in the browser. The package is on <a href="https://pypi.org/project/resenh/">PyPI</a>, and a <a href="https://colab.research.google.com/github/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb">Colab notebook</a> shows it in use.</td></tr>
 </table>
 
 <section class="section">
 <h2><span class="n">1</span>Problem understanding and solution strategy</h2>
-<p><b>Core technical challenge.</b> A dark photo has very little signal and comparatively a lot of sensor noise. Brightening it amplifies the noise, shifts colour, blows out lamps and windows, and over-brightens scenes that were only partly dark. A fixed curve cannot handle all of these at once: the right amount of gain, denoising and contrast depends on the photo.</p>
-<p><b>Constraints we set ourselves.</b> Results within 10 s on an ordinary laptop or phone with no server; a reproducible, honest evaluation (plain PSNR, no test-set tuning); and an installable package, not only a notebook.</p>
-<p><b>Proposed methodology.</b> We measure the photo first and choose every parameter from those measurements. Two restorers then run in parallel: an adaptive classical pipeline that is predictable and never invents content, and a Retinexformer network that restores colour and texture. A quality controller scores both outputs against the input and blends them with weights that favour the safer one. The hybrid matches the network on clean benchmarks and falls back to the classical result when the network misbehaves.</p>
+<p><b>Core technical challenge.</b> A photo taken in the dark holds little light and a lot of sensor noise. Brightening it raises the noise too, pulls colours off true, burns lamps and windows to white, and overexposes any part of the scene that was already lit. No single fixed curve gets all of this right, because each photo needs its own amount of gain, denoising and contrast.</p>
+<p>We also set three constraints. The result has to arrive within 10 seconds on an ordinary laptop or phone, without a server. The evaluation has to be reproducible, using plain PSNR with nothing tuned on the test set. And the work has to ship as a package anyone can install.</p>
+
+<p><b>Proposed methodology.</b> We measure the photo first and derive every setting from what we measure. Two methods then restore it. The classical pipeline is predictable and never adds detail that was not there. The Retinexformer network recovers colour and texture far better, but it sometimes invents them. A quality controller compares each output with the input and gives more weight to the one with fewer faults. We chose this design over a single fixed method because each method fails on photos the other handles well. On clean benchmark images the hybrid scores the same as the network, and when the network's output fails the controller's checks, the classical result takes over.</p>
 </section>
 
 <section class="section">
 <h2><span class="n">2</span>Technical architecture and implementation</h2>
 <figure class="frame">
   {{ARCH}}
-  <figcaption><b>Figure 1.</b> The pipeline (<code>resenh.enhance</code>). The analyzer's measurements set the parameters of both branches. The fine-tuned network variant also receives classical priors (illumination map and Retinex output) as extra input channels. The controller (highlighted) produces the final blend. Code: <code>src/resenh/</code> — <code>analysis.py</code>, <code>classical/</code>, <code>models/</code>, <code>controller.py</code>, <code>pipeline.py</code>.</figcaption>
+  <figcaption><b>Figure 1.</b> How <code>resenh.enhance</code> processes a photo. The analyzer's measurements set the parameters of both methods. The fine-tuned network also takes two classical outputs, the illumination map and the Retinex result, as extra input channels. The controller, highlighted, makes the final blend. The code is in <code>src/resenh/</code>: <code>analysis.py</code>, <code>classical/</code>, <code>models/</code>, <code>controller.py</code> and <code>pipeline.py</code>.</figcaption>
 </figure>
 
 <h3>2.1 Classical algorithmic baseline</h3>
-<p><b>Algorithms.</b> Illumination is estimated as max-RGB and refined with a guided filter, then used for Retinex/LIME-style brightening (reflectance = image ÷ illumination<sup>γ</sup>). This is followed by noise-adaptive guided/bilateral denoising, CLAHE on luma, gray-world white balance and highlight protection.</p>
-<p><b>Adaptive selection logic.</b> The analyzer measures seven statistics, and each parameter is a clipped linear function of one or two of them. Thresholds were set on training and validation images, never on test.</p>
+<p><b>Algorithms.</b> At each pixel we take the brightest of the three colour channels as a first estimate of the light falling there, then smooth that map with a guided filter. Dividing the image by this illumination map, raised to a power γ, brightens it in the Retinex style used by LIME (reflectance = image ÷ illumination<sup>γ</sup>). Then come guided or bilateral denoising matched to the noise level, CLAHE on the brightness channel, gray-world white balance and highlight protection.</p>
+<p><b>Adaptive selection logic.</b> The analyzer measures seven statistics, and each parameter is a clipped linear function of one or two of them. We fitted the thresholds on training and validation images; the test images played no part.</p>
 <div class="map keep">
-  <div>Mean luma, share of dark pixels</div><div class="arrow">→</div><div class="p">low-light decision; Retinex γ from 0.85 to 0.45; gain floor</div>
-  <div>Noise σ (Immerkaer), relative to signal</div><div class="arrow">→</div><div class="p">denoise strength 0–1; CLAHE clip from 2.5 down to 1.5</div>
-  <div>Colour cast (gray-world distance)</div><div class="arrow">→</div><div class="p">white-balance strength 0–0.8</div>
-  <div>Illumination non-uniformity</div><div class="arrow">→</div><div class="p">γ relaxed to keep relief in partly lit scenes</div>
+  <div>Mean brightness, share of dark pixels</div><div class="arrow">→</div><div class="p">whether the photo counts as low-light; Retinex γ from 0.85 down to 0.45; minimum gain</div>
+  <div>Noise σ (Immerkaer method), relative to signal</div><div class="arrow">→</div><div class="p">denoising strength from 0 to 1; CLAHE clip from 2.5 down to 1.5</div>
+  <div>Colour cast (distance from gray)</div><div class="arrow">→</div><div class="p">white-balance strength from 0 to 0.8</div>
+  <div>Uneven lighting</div><div class="arrow">→</div><div class="p">a gentler γ, so partly lit scenes keep their depth</div>
   <div>Share of near-white highlights</div><div class="arrow">→</div><div class="p">highlight protection, strongest for small lamps</div>
 </div>
 
 <h3>2.2 Deep learning pipeline</h3>
-<p><b>Model.</b> Retinexformer (ICCV 2023), a 1.6 M-parameter one-stage Retinex transformer. We chose it because it has the best plain-PSNR record of any model with released code. It is also small enough to run in a browser through ONNX Runtime Web: about 40 MB on first load, then cached.</p>
-<p><b>Loss and training.</b> We fine-tuned the backbone from the official checkpoints. The stem was widened with zero-initialised channels for the classical priors, so training starts exactly at the official model. The loss is Charbonnier + 0.2·(1−SSIM) + 0.02·VGG-19 perceptual, wrapped in the GT-mean loss (ICCV 2025). Training used progressive patches (128→256→384), EMA 0.999, random gamma and noise augmentation, with one model per benchmark: LOL-v1 (485 pairs), LOL-v2-Real (689), LOL-v2-Syn (900). A generalist model was also trained on LOL plus LSRW (5,600 pairs, de-duplicated). Training and validation splits were made by scene so that no scene leaks between them.</p>
+<p><b>Model.</b> Retinexformer (ICCV 2023), a Retinex-based transformer with 1.6 million parameters that restores an image in one pass. In the independent audit we followed, it had the highest plain PSNR of any model with released code on LOL-v1 and LOL-v2-Syn, and was close to the best on LOL-v2-Real. It is also small enough to run in a browser through ONNX Runtime Web: the first visit downloads about 40 MB, which the browser then caches.</p>
+<p><b>Loss and training.</b> We fine-tuned from the official checkpoints. The first layer got extra input channels for the classical outputs, with their weights set to zero, so training begins exactly at the official model. The loss is Charbonnier + 0.2·(1−SSIM) + 0.02·VGG-19 perceptual, wrapped in the GT-mean loss (ICCV 2025). Training patches grew from 128 to 256 to 384 pixels, we kept a moving average of the weights (EMA 0.999), and we varied gamma and added noise at random. Each benchmark has its own model: LOL-v1 (485 training pairs), LOL-v2-Real (689) and LOL-v2-Syn (900). We also trained a generalist model on LOL and LSRW together: 5,600 pairs once duplicates were removed. Training and validation images were split by scene, so no scene appears in both.</p>
 
 <h3>2.3 Hybrid integration and adaptive mechanism</h3>
-<p><b>Fusion strategy.</b> Classical guidance enters at three points. Before the network, an adaptive noise gate pre-denoises the input in proportion to the measured noise σ. Inside the fine-tuned network, the illumination map and Retinex output are extra input channels. After the network, the controller compares both outputs against the input.</p>
-<p><b>Decision logic.</b> For each candidate the controller computes four guards against the input: newly clipped highlights, chroma shift, edges kept and noise amplification. The guards combine into a penalty, and the weights are <i>w</i> ∝ prior · exp(−penalty / T). The prior favours the network on truly dark inputs. Highlight protection then restores lamps the network over-brightened, and inputs that are already bright are blended back towards the original.</p>
+<p><b>Fusion strategy.</b> The classical side guides the network at three points. Before the network, a noise gate denoises the input in proportion to the noise it measured. Inside the fine-tuned network, the illumination map and the Retinex result arrive as extra inputs. After the network, the controller compares both outputs with the input.</p>
+<p><b>Decision logic.</b> For each output the controller measures four things against the input: highlights that were not clipped before but are now, change in colour, how many edges survive, and how much the noise grew. Together they give a penalty, and each output's weight is <i>w</i> ∝ prior · exp(−penalty / T). The prior favours the network when the input is very dark. After blending, highlight protection restores lamps that the network pushed to white, and a photo that was already bright is pulled back towards the original.</p>
 <figure class="keep">
   <div class="two" style="grid-template-columns: 1.35fr 1fr; gap: 6mm; align-items: start;">
     <div class="strip c4" style="grid-template-columns: repeat(2,1fr)">
@@ -182,13 +183,13 @@
       <tbody>{{GUARDS}}</tbody>
     </table>
   </div>
-  <figcaption><b>Figure 2.</b> The controller at work on an unseen photo (DICM), with the official LOL-v2-Real backbone as the network candidate. The network amplifies noise ×5 and tints the sky. The controller measures this, gives the classical branch almost all the weight, and caps the gain because the input is not truly dark.</figcaption>
+  <figcaption><b>Figure 2.</b> An unseen photo from the DICM set, with the official LOL-v2-Real model as the network. The network raises the noise 5.4 times and turns the sky orange. The controller detects both and gives the classical result almost all the weight. Because the input is not very dark, the analyzer also caps the gain.</figcaption>
 </figure>
 </section>
 
 <section class="section">
 <h2><span class="n">3</span>Experimental benchmarks and evaluation</h2>
-<p class="note">Protocol: plain RGB PSNR on the saved 8-bit image, with no ground-truth brightness correction and no per-image knobs. SSIM is MATLAB-style; LPIPS uses AlexNet; NIQE uses pyiqa <code>niqe_matlab</code>. Our harness reproduces the official Retinexformer scores exactly (25.15 / 22.79 / 25.67 dB) before comparing anything. Full tables with 95% confidence intervals, noise and edge metrics are in <code>eval_P1_T46.md</code>.</p>
+<p class="note">Protocol. PSNR is measured in RGB on the saved 8-bit image, with no ground-truth brightness correction and no per-image settings. SSIM follows the MATLAB implementation, LPIPS uses AlexNet, and NIQE uses <code>niqe_matlab</code> from pyiqa. Before comparing anything, we checked that our evaluation code reproduces the official Retinexformer scores exactly: 25.15, 22.79 and 25.67 dB. The full tables, with 95% confidence intervals and the noise and edge metrics, are in <code>eval_P1_T46.md</code>.</p>
 
 <h3>3.1 Quantitative benchmarks</h3>
 <table class="data keep">
@@ -197,9 +198,9 @@
 </table>
 <figure class="frame">
   {{BARS}}
-  <figcaption><b>Figure 3.</b> PSNR on the three standard test sets (15, 100 and 100 pairs). The hybrid matches the network within the confidence interval on every set (±0.7 dB on LOL-v2, ±1.5 dB on LOL-v1). The classical branch trails by 6–9 dB, but it never invents content, which is what makes it a useful fallback.</figcaption>
+  <figcaption><b>Figure 3.</b> PSNR on the three standard test sets, of 15, 100 and 100 pairs. On every set the hybrid falls within the network's confidence interval (about ±0.7 dB on LOL-v2 and ±1.5 dB on LOL-v1). The classical method trails by 6 to 9 dB, but it never invents content, so it is safe to fall back on.</figcaption>
 </figure>
-<p><b>Analysis.</b> Structural fidelity is decided by the network: it adds 5–9 dB PSNR and about 0.1 SSIM over the classical branch, and halves LPIPS. The controller costs essentially nothing on clean benchmark images (+0.03 dB on LOL-v2-Real), but its value appears on real photos (Figure 2). On an RTX 4070 laptop GPU a 1-megapixel photo takes {{GPU_C}} s classical, {{GPU_D}} s network-only and {{GPU_H}} s hybrid. The hybrid includes the classical branch and the priors, which run on the CPU. On the laptop CPU alone the hybrid takes {{CPU_H}} s. In a laptop browser the hybrid finishes in about 6 s with WebGPU.</p>
+<p><b>Analysis.</b> The network supplies almost all of the accuracy. Against the classical method it adds 5 to 9 dB of PSNR and about 0.1 of SSIM, and it halves LPIPS. NIQE, which judges naturalness without a reference, ranks them the other way: on all four unseen photo sets the classical output scores better, for example 3.21 against 3.84 on DICM. The controller costs almost nothing on clean benchmark images (+0.03 dB on LOL-v2-Real). On the photo in Figure 2, it is what keeps the orange sky out of the result. On an RTX 4070 laptop GPU, a one-megapixel photo takes {{GPU_C}} s with the classical method, {{GPU_D}} s with the network alone and {{GPU_H}} s with the hybrid. The hybrid takes longest because its classical steps and priors run on the CPU. On the laptop's CPU alone the hybrid takes {{CPU_H}} s, and in a laptop browser with WebGPU about 6 s.</p>
 <div class="two keep">
   <div>
     <h3 style="margin-top:2mm">Unseen camera: LSRW</h3>
@@ -220,7 +221,7 @@
     <div class="ours"><img src="fig/pair_hybrid.jpg" alt=""><div class="lab"><b>Hybrid</b></div></div>
     <div><img src="fig/pair_gt.jpg" alt=""><div class="lab">Ground truth</div></div>
   </div>
-  <figcaption><b>Figure 4.</b> A LOL-v2-Real test pair. The classical result is brighter but flatter; the network and the hybrid recover the reference's colour.</figcaption>
+  <figcaption><b>Figure 4.</b> A test pair from LOL-v2-Real. The classical result is bright but flat. The network and the hybrid come much closer to the colour of the reference.</figcaption>
 </figure>
 <figure>
   <div class="rowlab">Extreme low light (LIME)</div>
@@ -237,7 +238,7 @@
     <div><img src="fig/vv_5_dl.jpg" alt=""><div class="lab">Deep learning</div></div>
     <div class="ours"><img src="fig/vv_5_hybrid.jpg" alt=""><div class="lab"><b>Hybrid</b></div></div>
   </div>
-  <figcaption><b>Figure 5.</b> Unseen photos. In the dark scene the lamps stay intact while the shadows open up. In the backlit scene the sky is not blown out and the subjects are lifted.</figcaption>
+  <figcaption><b>Figure 5.</b> Photos the models never saw. In the dark scene the shadows open up and the lamps keep their shape. In the backlit scene the sky keeps its colour and the people brighten a little, less than with the classical method.</figcaption>
 </figure>
 <figure>
   <div class="strip c6">
@@ -248,13 +249,13 @@
     <div><img src="fig/stage_network.jpg" alt=""><div class="lab"><b>Network</b></div></div>
     <div class="ours"><img src="fig/lime_1_hybrid.jpg" alt=""><div class="lab"><b>Fused result</b></div></div>
   </div>
-  <figcaption><b>Figure 6.</b> Intermediate states for the LIME photo: the illumination map (max-RGB refined by a guided filter), the per-pixel gain, the Retinex output before denoising and CLAHE, both branch outputs and the fused result, as returned by <code>res.stages</code> and shown in the web demo's “Every stage” tab.</figcaption>
+  <figcaption><b>Figure 6.</b> The steps behind the LIME photo: the illumination map (brightest channel, smoothed by a guided filter), the gain applied to each pixel, the Retinex result before denoising and CLAHE, the two methods' outputs, and the blend. <code>res.stages</code> returns these images, and the web demo shows them in its "Every stage" tab.</figcaption>
 </figure>
 
 <h3>3.3 Ablation study</h3>
 <figure class="frame">
   {{ABL}}
-  <figcaption><b>Figure 7.</b> PSNR change when one component is switched on, with everything else held fixed. The training ablations are 3,000-iteration fine-tunes from the same initialisation. The GT-mean loss improves SSIM and LPIPS but costs plain PSNR, so the LOL benchmark rows use the official backbone. For real photos the package defaults to the generalist model, which scored 1.5 dB higher on LSRW validation. The noise gate trades 0.55 dB on clean images for 4.3 dB on noisy ones; this is why the package offers a <code>robust</code> preset (the default) and a <code>benchmark</code> preset.</figcaption>
+  <figcaption><b>Figure 7.</b> How much PSNR each component adds when switched on, with everything else unchanged. The training comparisons are 3,000-iteration fine-tunes from the same starting point. The GT-mean loss improves SSIM and LPIPS but lowers plain PSNR, so the LOL benchmark rows use the official network. For real photos the package defaults to the generalist model, which scored 1.5 dB higher on LSRW validation. The noise gate costs 0.55 dB on clean images and adds 4.3 dB on noisy ones, so the package offers two presets: <code>robust</code>, the default, and <code>benchmark</code>.</figcaption>
 </figure>
 </section>
 
@@ -262,28 +263,20 @@
 <h2><span class="n">4</span>Deployment and quickstart</h2>
 <pre><span class="c"># 1. Install (Python 3.10+; add [dl] for the network, omit it for classical-only)</span>
 pip install "resenh[dl]"
-
 <span class="c"># 2. Enhance a folder of photos</span>
 resenh enhance ./samples/ -o ./results/            <span class="c"># --mode hybrid | dl | classical</span>
-
 <span class="c"># 3. Or from Python, in Jupyter, Colab or Kaggle</span>
 import resenh
 res = resenh.enhance("night.jpg")
 res.save("night_restored.png"); print(res.summary())
-
 <span class="c"># Reproduce the evaluation</span>
 git clone {{REPO}} &amp;&amp; cd resen &amp;&amp; pip install -e ".[dl,eval]"
 python eval/run_eval.py --bench lolv1 lolv2_real lolv2_syn --methods classical "net:retinexformer-{bench}" "hybrid-bench:retinexformer-{bench}" --niqe
 python eval/make_report.py</pre>
-<p><b>Deployment formats.</b></p>
-<ul>
-  <li><b>Web app:</b> React and shadcn/ui, running the same Python package in the browser through Pyodide, with the network in ONNX Runtime Web (WebGPU, falling back to WebAssembly). It is hosted as static files on Cloudflare, so there is no server to sleep or queue, and photos never leave the device.</li>
-  <li><b>Python package and CLI:</b> <code>resenh</code> on PyPI, with weights downloaded on first use (SHA-256 checked) from Hugging Face.</li>
-  <li><b>Other formats:</b> a Gradio app (<code>resenh app</code>), a Dockerfile, and a Colab/Kaggle quickstart notebook.</li>
-</ul>
+<p><b>Deployment formats.</b> The web app, built with React and shadcn/ui, runs the same Python package inside the browser through Pyodide. The network runs in ONNX Runtime Web, on WebGPU where available and WebAssembly elsewhere. Cloudflare serves the site as static files, so there is no server to sleep or queue requests, and photos never leave the device. The Python package and command-line tool are on PyPI as <code>resenh</code>. They fetch the weights from Hugging Face on first use and check each file's SHA-256. The repository also includes a Gradio app (<code>resenh app</code>), a Dockerfile and a quickstart notebook for Colab and Kaggle.</p>
 </section>
 
-<section class="section keep">
+<section class="section" style="margin-top:-2mm">
 <h3>Submission checklist</h3>
 <ul class="checks">
   <li>Public GitHub repository with an updated README</li>
@@ -293,7 +286,7 @@ python eval/make_report.py</pre>
 </ul>
 </section>
 
-<footer><span>resenh · team V-Max (T46) · problem P1</span><span>commit {{COMMIT}}</span></footer>
+<footer><span>resenh, team V-Max (T46), problem P1</span><span>commit {{COMMIT}}</span></footer>
 </div>
 </body>
 </html>

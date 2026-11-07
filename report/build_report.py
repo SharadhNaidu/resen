@@ -87,7 +87,7 @@ def arch_svg() -> str:
     nodes = [
         node(24, 136, 96, 56, "Photo", "any size", "INPUT", kind="io"),
         node(152, 136, 120, 56, "Analyzer", "stats → params", "MEASURE"),
-        node(328, 48, 160, 64, "Classical branch", "Retinex · CLAHE · denoise", "CLASSICAL"),
+        node(328, 48, 160, 64, "Classical branch", "Retinex, CLAHE, denoise", "CLASSICAL"),
         node(328, 216, 160, 64, "Network branch", "Retinexformer, 1.6 M", "DEEP"),
         node(536, 132, 128, 64, "Quality controller", "guards → fusion", "HYBRID", focal=True),
         node(696, 136, 96, 56, "Result", "lamps protected", "OUTPUT", kind="io"),
@@ -227,14 +227,14 @@ def main():
 
     abl = [
         ("Plain loss instead of GT-mean loss", b("net:runs/syn_abl_plainloss/last.pth", "lolv2_syn")
-         - b("net:runs/syn_abl_full3k/last.pth", "lolv2_syn"), "LOL-v2-Syn test · 3k-iteration fine-tunes"),
+         - b("net:runs/syn_abl_full3k/last.pth", "lolv2_syn"), "LOL-v2-Syn test, 3k-iteration fine-tunes"),
         ("Classical priors as network inputs", b("net:runs/syn_abl_full3k/last.pth", "lolv2_syn")
-         - b("net:runs/syn_abl_nopriors/last.pth", "lolv2_syn"), "LOL-v2-Syn test · 3k-iteration fine-tunes"),
+         - b("net:runs/syn_abl_nopriors/last.pth", "lolv2_syn"), "LOL-v2-Syn test, 3k-iteration fine-tunes"),
         ("Quality controller vs network alone", b("hybrid-bench:retinexformer-bench", "lolv2_real")
-         - b("net:retinexformer-bench", "lolv2_real"), "LOL-v2-Real test · clean benchmark images"),
-        ("Adaptive noise gate, noisy photos", 4.3, "val_b with added sensor noise"),
+         - b("net:retinexformer-bench", "lolv2_real"), "LOL-v2-Real test, clean benchmark images"),
+        ("Adaptive noise gate, noisy photos", 4.3, "validation images with added noise"),
         ("Adaptive noise gate, clean photos", b("hybrid:retinexformer-bench", "lolv2_syn")
-         - b("hybrid-bench:retinexformer-bench", "lolv2_syn"), "LOL-v2-Syn test · why benchmark preset exists"),
+         - b("hybrid-bench:retinexformer-bench", "lolv2_syn"), "LOL-v2-Syn test, clean images"),
     ]
 
     lsrw = [(n, res(m, "lsrw")) for n, m in [
