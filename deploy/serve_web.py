@@ -15,4 +15,4 @@ class H(http.server.SimpleHTTPRequestHandler):
 
 
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-http.server.ThreadingHTTPServer(("", port), functools.partial(H, directory="web")).serve_forever()
+http.server.ThreadingHTTPServer(("", port), functools.partial(H, directory=sys.argv[2] if len(sys.argv) > 2 else "site/dist")).serve_forever()

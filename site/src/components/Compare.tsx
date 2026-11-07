@@ -34,13 +34,14 @@ export function Compare({ before, after, beforeLabel = "Original", afterLabel = 
       onPointerDown={(e) => { setDrag(true); e.currentTarget.setPointerCapture(e.pointerId); move(e.clientX) }}
       onPointerMove={(e) => drag && move(e.clientX)}
       onPointerUp={() => setDrag(false)}
+      onPointerCancel={() => setDrag(false)}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") setPos((p) => Math.max(0, p - 4))
         if (e.key === "ArrowRight") setPos((p) => Math.min(100, p + 4))
       }}
       style={ratio ? { aspectRatio: String(ratio) } : undefined}
       className={cn(
-        "group relative w-full cursor-ew-resize touch-none select-none overflow-hidden bg-[#0d1020] outline-none",
+        "group relative w-full cursor-ew-resize touch-pan-y select-none overflow-hidden bg-[#0d1020] outline-none",
         "focus-visible:ring-4 focus-visible:ring-periwinkle/60",
         className,
       )}

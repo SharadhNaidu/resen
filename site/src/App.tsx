@@ -119,7 +119,7 @@ export default function App() {
 
           <div className="relative overflow-hidden rounded-[22px] bg-white">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,#e6ecff_0%,transparent_70%)]" />
-            <div className="relative grid gap-5 p-3 sm:p-5 lg:grid-cols-[1fr_340px]">
+            <div className="relative grid grid-cols-[minmax(0,1fr)] gap-5 p-3 sm:p-5 lg:grid-cols-[minmax(0,1fr)_340px]">
               {/* Stage */}
               <div className="relative self-start overflow-hidden rounded-[18px] bg-[#0d1020]">
                 <Compare
@@ -154,7 +154,7 @@ export default function App() {
 
                 <div>
                   <p className="mb-2.5 text-[13px] font-medium text-[#3d4260]">Or try one of these</p>
-                  <div className="grid grid-cols-6 gap-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-6 gap-1.5 sm:gap-2 lg:grid-cols-3">
                     {SAMPLES.map((s) => (
                       <button
                         key={s.id}
@@ -211,8 +211,8 @@ export default function App() {
             {r && <Insights r={r} />}
           </div>
         </div>
-        <p className="mt-4 flex items-center justify-center gap-2 text-center text-[13px] text-[#5d6380]">
-          <ShieldCheck className="size-4 text-periwinkle-deep" />
+        <p className="mt-4 px-2 text-center text-[13px] text-balance text-[#5d6380]">
+          <ShieldCheck className="mr-1.5 inline size-4 -translate-y-px align-middle text-periwinkle-deep" />
           Runs on your device with WebAssembly or WebGPU. Nothing is uploaded.
         </p>
       </section>
@@ -280,22 +280,22 @@ function Insights({ r }: { r: NonNullable<ReturnType<typeof useEngine>["result"]
     <div className="relative border-t border-[#1e2033]/8 bg-[#fbfcff] p-3 sm:p-5">
       <Tabs defaultValue="analysis">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <TabsList className="h-11 rounded-full bg-[#eef1fb] p-1">
-            <TabsTrigger value="analysis" className="rounded-full px-4">What it measured</TabsTrigger>
-            <TabsTrigger value="stages" className="rounded-full px-4">Every stage</TabsTrigger>
-            <TabsTrigger value="controller" className="rounded-full px-4">Quality check</TabsTrigger>
+          <TabsList className="h-11 w-full rounded-full bg-[#eef1fb] p-1 sm:w-auto">
+            <TabsTrigger value="analysis" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">What it measured</TabsTrigger>
+            <TabsTrigger value="stages" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">Every stage</TabsTrigger>
+            <TabsTrigger value="controller" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">Quality check</TabsTrigger>
           </TabsList>
           <a
             href={r.output}
             download="resenh.png"
-            className="state-layer inline-flex h-10 items-center gap-2 rounded-full border border-[#1e2033]/15 bg-white px-4 text-[14px] font-medium text-[#1e2033] outline-none focus-visible:ring-3 focus-visible:ring-periwinkle/60"
+            className="state-layer inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border sm:w-auto border-[#1e2033]/15 bg-white px-4 text-[14px] font-medium text-[#1e2033] outline-none focus-visible:ring-3 focus-visible:ring-periwinkle/60"
           >
             <Download className="size-4" /> Download PNG
           </a>
         </div>
 
         <TabsContent value="analysis" className="mt-5">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
             <Metric label="Processing time" value={`${(r.ms / 1000).toFixed(2)} s`} note={r.netMs ? `network ${(r.netMs / 1000).toFixed(2)} s on ${r.backend === "webgpu" ? "WebGPU" : "WebAssembly"}` : "no network needed"} />
             <Metric label="Edges preserved" value={rep.quality.epi.toFixed(3)} note="1.000 keeps every edge of the input" />
             <Metric label="Noise vs. simple brightening" value={`×${rep.quality.noise_ratio.toFixed(2)}`} note="below 1 means cleaner than raising exposure" />
@@ -352,9 +352,9 @@ function Insights({ r }: { r: NonNullable<ReturnType<typeof useEngine>["result"]
 
 function Metric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-[20px] bg-white p-4 shadow-[0_0_0_1px_rgba(30,32,51,.07)]">
-      <div className="text-[13px] text-[#5d6380]">{label}</div>
-      <div className="tabular mt-1 text-[26px] font-[450] tracking-tight text-[#1e2033]">{value}</div>
+    <div className="min-w-0 rounded-[20px] bg-white p-3.5 shadow-[0_0_0_1px_rgba(30,32,51,.07)] sm:p-4">
+      <div className="text-[12.5px] leading-snug text-[#5d6380] sm:text-[13px]">{label}</div>
+      <div className="tabular mt-1 text-[21px] sm:text-[26px] font-[450] tracking-tight text-[#1e2033]">{value}</div>
       <div className="mt-1 text-[12px] leading-snug text-[#7a8099]">{note}</div>
     </div>
   )
@@ -391,7 +391,7 @@ function Controller({ rep }: { rep: Report }) {
   }
   const net = d.weights.network ?? 0
   return (
-    <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <div className="rounded-[20px] bg-white p-5 shadow-[0_0_0_1px_rgba(30,32,51,.07)]">
         <h3 className="text-[15px] font-medium">How the result was blended</h3>
         <div className="mt-4 flex h-11 overflow-hidden rounded-full bg-[#eef1fb] text-[13px] font-medium">
@@ -530,9 +530,9 @@ function HowItWorks() {
       <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((s, i) => (
           <li key={s.title} className="group relative overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_0_0_1px_rgba(30,32,51,.07)] transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(106,136,226,.35),0_18px_40px_-20px_rgba(54,72,160,.35)]">
-            <Shape name={s.shape} palette={s.palette} className="absolute -top-10 -right-10 size-32 opacity-90 transition-transform duration-700 ease-[cubic-bezier(.2,0,0,1)] group-hover:rotate-45" />
+            <Shape name={s.shape} palette={s.palette} className="absolute -top-8 -right-8 size-24 opacity-90 sm:-top-10 sm:-right-10 sm:size-32 transition-transform duration-700 ease-[cubic-bezier(.2,0,0,1)] group-hover:rotate-45" />
             <span className="tabular relative text-[13px] text-[#7a8099]">Step {i + 1}</span>
-            <h3 className="relative mt-16 text-[19px] font-[520] text-[#1e2033]">{s.title}</h3>
+            <h3 className="relative mt-9 text-[19px] sm:mt-16 font-[520] text-[#1e2033]">{s.title}</h3>
             <p className="relative mt-2 text-[14.5px] leading-relaxed text-[#4a5072]">{s.body}</p>
           </li>
         ))}
@@ -550,8 +550,8 @@ const TABLE = [
 function Results() {
   return (
     <section id="results" className="mx-auto max-w-6xl scroll-mt-20 px-4 pt-28">
-      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#232741] to-[#151829] p-6 text-white sm:p-10">
-        <Shape name="flower" palette="dusk" spin className="pointer-events-none absolute -top-24 -right-20 size-80 opacity-80 blur-[1px]" />
+      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#232741] to-[#151829] p-5 text-white sm:p-10">
+        <Shape name="flower" palette="dusk" spin className="pointer-events-none absolute -top-28 -right-28 size-60 opacity-50 blur-[1px] sm:-top-24 sm:-right-20 sm:size-80 sm:opacity-80" />
         <div className="pointer-events-none absolute -bottom-40 -left-24 size-96 rounded-full bg-[radial-gradient(circle,#6a88e2_0%,transparent_65%)] opacity-50" />
         <div className="relative max-w-2xl">
           <h2 className="text-[clamp(2rem,4vw,2.9rem)] leading-[1.08] font-[440]">Measured the strict way</h2>
@@ -560,35 +560,35 @@ function Results() {
             on the test set. Our harness reproduces the published Retinexformer numbers exactly before comparing anything.
           </p>
         </div>
-        <div className="relative mt-8 overflow-x-auto rounded-[22px] bg-white/[.06] ring-1 ring-white/10 backdrop-blur">
-          <table className="w-full min-w-[560px] text-left text-[15px]">
+        <div className="relative mt-8 overflow-x-auto rounded-[18px] bg-white/[.06] sm:rounded-[22px] ring-1 ring-white/10 backdrop-blur">
+          <table className="w-full text-left text-[14px] sm:text-[15px]">
             <thead>
               <tr className="text-[13px] text-white/60">
-                <th className="px-5 py-4 font-normal">LOL-v2 Synthetic, 100 test pairs</th>
-                <th className="px-5 py-4 text-right font-normal">PSNR (dB), higher is better</th>
-                <th className="px-5 py-4 text-right font-normal">SSIM, higher is better</th>
-                <th className="px-5 py-4 text-right font-normal">LPIPS, lower is better</th>
+                <th className="py-4 pr-2 pl-4 font-normal sm:px-5">LOL-v2 Synthetic, 100 test pairs</th>
+                <th className="px-2 py-4 text-right font-normal whitespace-nowrap sm:px-5"><span className="sm:hidden">PSNR ↑</span><span className="hidden sm:inline">PSNR (dB), higher is better</span></th>
+                <th className="px-2 py-4 text-right font-normal whitespace-nowrap sm:px-5"><span className="sm:hidden">SSIM ↑</span><span className="hidden sm:inline">SSIM, higher is better</span></th>
+                <th className="py-4 pr-4 pl-2 text-right font-normal whitespace-nowrap sm:px-5"><span className="sm:hidden">LPIPS ↓</span><span className="hidden sm:inline">LPIPS, lower is better</span></th>
               </tr>
             </thead>
             <tbody>
               {TABLE.map((t) => (
                 <tr key={t.name} className={cn("border-t border-white/10", t.ours && "bg-white/[.07]")}>
-                  <td className="px-5 py-4">
+                  <td className="py-4 pr-2 pl-4 sm:px-5">
                     <span className="inline-flex items-center gap-2">
                       {t.ours && <Shape name="cookie" palette="dusk" className="size-4" />}
                       {t.name}
                     </span>
                   </td>
-                  <td className="tabular px-5 py-4 text-right font-medium">{t.psnr}</td>
-                  <td className="tabular px-5 py-4 text-right font-medium">{t.ssim}</td>
-                  <td className="tabular px-5 py-4 text-right font-medium">{t.lpips}</td>
+                  <td className="tabular px-2 py-4 text-right font-medium sm:px-5">{t.psnr}</td>
+                  <td className="tabular px-2 py-4 text-right font-medium sm:px-5">{t.ssim}</td>
+                  <td className="tabular py-4 pr-4 pl-2 text-right font-medium sm:px-5">{t.lpips}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <div className="relative mt-6 flex flex-wrap gap-3">
-          <a href={`${REPO}/blob/main/eval_P1_T01.md`} className="inline-flex h-11 items-center rounded-full bg-white px-5 text-[15px] font-medium text-[#1e2033]">Full results on every benchmark</a>
+          <a href={`${REPO}/blob/main/eval_P1_T46.md`} className="inline-flex h-11 items-center rounded-full bg-white px-5 text-[15px] font-medium text-[#1e2033]">Full results on every benchmark</a>
           <a href={`${REPO}/blob/main/docs/failures.md`} className="inline-flex h-11 items-center rounded-full border border-white/25 px-5 text-[15px] font-medium text-white">Where it still fails</a>
         </div>
       </div>
@@ -599,17 +599,18 @@ function Results() {
 const CODE = {
   python: `import resenh
 
-res = resenh.enhance("night.jpg")   # path, URL, PIL image or NumPy array
+# a path, URL, PIL image or NumPy array
+res = resenh.enhance("night.jpg")
 res.save("night_restored.png")
 
-res              # in Jupyter, Colab or Kaggle: before and after
-res.summary()    # what it measured, chose and why
-res.stages       # every intermediate image, labelled`,
+res            # notebook: before / after
+res.summary()  # what it measured and chose
+res.stages     # every stage, labelled`,
   cli: `pip install "resenh[dl]"
 
 resenh enhance night.jpg -o restored.png
-resenh enhance photos/ -o restored/ --mode hybrid
-resenh --env      # versions, device and cached weights`,
+resenh enhance photos/ -o restored/
+resenh --env   # versions, device, weights`,
 }
 
 function Python() {
@@ -620,8 +621,8 @@ function Python() {
         <h2 className="text-[clamp(2rem,4vw,2.9rem)] leading-[1.08] font-[440] text-[#1e2033]">The same engine, as a Python package</h2>
         <p className="mx-auto mt-4 max-w-xl text-[17px] text-[#4a5072]">Full resolution, GPU when you have one, and every stage inspectable.</p>
       </div>
-      <div className="mt-10 grid items-start gap-3 lg:grid-cols-[1.25fr_1fr]">
-        <div className="rounded-[28px] bg-gradient-to-b from-white to-[#eef2ff] p-4 shadow-[0_0_0_1px_rgba(30,32,51,.07)] sm:p-6">
+      <div className="mt-10 grid grid-cols-[minmax(0,1fr)] items-start gap-3 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="min-w-0 rounded-[28px] bg-gradient-to-b from-white to-[#eef2ff] p-3 shadow-[0_0_0_1px_rgba(30,32,51,.07)] sm:p-6">
           <Tabs defaultValue="python">
             <div className="flex items-center justify-between">
               <TabsList className="h-10 rounded-full bg-[#eef1fb] p-1">
@@ -631,7 +632,7 @@ function Python() {
             </div>
             {(["python", "cli"] as const).map((k) => (
               <TabsContent key={k} value={k} className="relative mt-4">
-                <pre className="overflow-x-auto rounded-[20px] bg-white p-5 text-[13.5px] leading-[1.75] text-[#26293d] shadow-[0_0_0_1px_rgba(30,32,51,.06)]"><code>{CODE[k]}</code></pre>
+                <pre className="overflow-x-auto rounded-[20px] bg-white p-4 pt-12 text-[12px] sm:p-5 sm:pt-5 sm:text-[13.5px] leading-[1.75] text-[#26293d] shadow-[0_0_0_1px_rgba(30,32,51,.06)]"><code>{CODE[k]}</code></pre>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -644,7 +645,7 @@ function Python() {
             ))}
           </Tabs>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-1">
           <Card title="Notebook ready" body="Open the quickstart in Colab or Kaggle and run it top to bottom, GPU or not." href={`https://colab.research.google.com/github/SharadhNaidu/resen/blob/main/notebooks/quickstart.ipynb`} cta="Open in Colab" shape="clover" />
           <Card title="Works without PyTorch" body="pip install resenh alone gives the classical pipeline. Add [dl] for the network." href="https://pypi.org/project/resenh/" cta="View on PyPI" shape="cookie" />
           <Card title="Every stage, inspectable" body="Illumination, reflectance, gain, denoising and the controller's decision come back with the image." href={`${REPO}#use`} cta="Read the API" shape="flower" icon />
