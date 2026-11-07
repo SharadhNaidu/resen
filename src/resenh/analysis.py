@@ -110,6 +110,8 @@ def choose_params(s: Stats) -> Params:
         clahe_clip=float(_lerp(2.5, 1.5, denoise)),  # less local contrast when noisy
         denoise_strength=float(denoise),
         wb_strength=float(np.clip((s.cast_strength - 0.05) / 0.25, 0.0, 0.8)),
-        highlight_protect=float(np.clip(s.highlight_frac * 20, 0.0, 1.0)),
+        # the spatial mask in protect_highlights localises the effect, so even a tiny lamp
+        # gets full protection (networks trained on LOL hallucinate colour in clipped sources)
+        highlight_protect=1.0 if s.highlight_frac > 1e-5 else 0.6,
         dl_weight_hint=float(1.0 if is_low else 0.3),
     )

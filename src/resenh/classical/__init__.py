@@ -7,7 +7,7 @@ import numpy as np
 from resenh.analysis import Params, analyze, choose_params
 from resenh.classical.clahe import clahe_luma
 from resenh.classical.color import gray_world, match_exposure, protect_highlights
-from resenh.classical.denoise import denoise
+from resenh.classical.denoise import denoise, denoise_measured
 from resenh.classical.illumination import estimate_illumination, reflectance, retinex_enhance
 
 __all__ = ["enhance_classical"]
@@ -38,6 +38,10 @@ def enhance_classical(img: np.ndarray, params: Params | None = None,
                                      floor=params.gain_floor)
         inter["retinex"] = x
         inter["gain_map"] = np.clip(1.0 / applied / 25.0, 0, 1)
+        if "denoise" not in disable:
+            # residual noise is amplified by the gain: re-estimate it and filter adaptively
+            x = denoise_measured(x)
+            inter["post_denoised"] = x
     if "clahe" not in disable:
         c = clahe_luma(x, params.clahe_clip)
         x = (0.5 * x + 0.5 * c).astype(np.float32)  # half-strength: CLAHE alone over-sharpens noise

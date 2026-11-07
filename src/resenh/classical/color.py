@@ -36,6 +36,13 @@ def protect_highlights(enhanced: np.ndarray, original: np.ndarray,
     """Blend back the original where it was already bright (lamps, signs), to stop blow-out."""
     if strength <= 0:
         return enhanced
+    import cv2  # noqa: PLC0415
+
     y = luma(original)
-    w = np.clip((y - 0.6) / 0.35, 0.0, 1.0)[..., None] * strength
-    return (enhanced * (1 - w) + np.maximum(enhanced, original) * w).astype(np.float32)
+    # soft mask of already-bright sources, dilated so halos/colour fringes around them are
+    # also restored (networks trained on LOL hallucinate colour in saturated lamps)
+    m = np.clip((y - 0.55) / 0.3, 0.0, 1.0).astype(np.float32)
+    k = max(3, int(round(min(y.shape) / 100)) | 1)
+    m = cv2.GaussianBlur(cv2.dilate(m, np.ones((k, k), np.uint8)), (0, 0), k / 2)
+    w = np.clip(m, 0, 1)[..., None] * strength
+    return (enhanced * (1 - w) + original * w).astype(np.float32)
