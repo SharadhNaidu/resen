@@ -36,3 +36,14 @@ val_a PSNR falls as that memorisation is lost, so it cannot be used to pick chec
 - The comparison table uses the `benchmark` preset as the resenh row. That was fixed from val_b,
   where the gate cost −0.55 dB on clean inputs. The robust row sits next to it.
 - The stress tests and unseen images use the `robust` preset, which is what ships.
+
+## Incident 2 (recorded ~08:30 IST, after the one-time test run of the fine-tuned v1 and Real models)
+- **Result.** The fine-tuned backbones lost PSNR against the official checkpoints:
+  - LOL-v1: 23.35 vs 25.15 dB;
+  - LOL-v2-Real: 20.82 vs 22.79 dB.
+
+  SSIM and LPIPS both improved (v1 0.850 / 0.122 vs 0.846 / 0.131; Real 0.852 / 0.139 vs 0.840 / 0.171).
+- **Cause.** The Syn training ablation isolates it: the plain-loss variant scores 25.92 dB against 25.60 with the GT-mean loss. The GT-mean loss tolerates global brightness offsets, and plain PSNR penalises exactly those.
+- **Decision.** The fine-tuned rows are reported unchanged, as pre-registered. There is no retraining and no re-tuning. Plain-loss retraining is future work.
+- **Added rows, with no pipeline change.** The shipped package configuration (the hybrid pipeline with the public official backbone) had never been tested. It is evaluated once on test and reported next to the fine-tuned rows, and neither is chosen as the headline.
+- **Default model.** It is chosen on LSRW val_b, which no candidate trained on, before any LSRW test run.

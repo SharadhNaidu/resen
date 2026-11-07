@@ -8,10 +8,10 @@ Plan: `~/.claude/plans/so-check-out-the-pure-wozniak.md` (7 phases).
 | 1 Setup and data | done |
 | 2 Classical branch and analyzer | done |
 | 3 Eval harness, DL branch and controller | done (reproduction gate passed) |
-| 4 App, docs, MVP | done (HF deploy blocked on user's HF write token) |
-| 5 Train models | running: queue.sh (v1_light, 3 Syn ablations) → queue2.sh (real_light re-run, general_light) |
-| 6 Experiments | in progress: failures.md written; stress, latency, report pending trained models |
-| 7 Release | todo (PyPI publish needs user confirmation) |
+| 4 App, docs, MVP | done. Live at https://resenh.sharadh.blog (in-browser engine) |
+| 5 Train models | done (see phase-5-6-7.md; fine-tunes lost about 2 dB PSNR on v1 and Real, incident 2) |
+| 6 Experiments | done except: stress tests, GPU latency and the LSRW generalisation table, if missing in eval_P1_T01.md |
+| 7 Release | PyPI 0.1.1 published; web live; trusted publishing still to configure |
 
 ## Environment
 - **Python 3.14** system interpreter (torch 2.12.1+cu126, RTX 4070 8 GB). A 3.12 venv was abandoned because the CUDA torch download was too slow.
@@ -34,3 +34,5 @@ Plan: `~/.claude/plans/so-check-out-the-pure-wozniak.md` (7 phases).
 - If `general_light` has not finished by the deadline, the app ships with the fallback default `retinexformer-lolv2-real` (FALLBACK in weights.py). Swap it in later as `resenh-light-general`.
 - Do not wait on the GPU queue: report, docs and deploy use whatever checkpoints exist; `eval/make_report.py` prints "(not run)" for missing rows.
 - Frozen-pipeline finding: the clipping guard mis-selects classical on bright daylight Syn scenes. It is not seen on val_b, so it stays as failure case 1 in docs/failures.md. Do not re-tune it.
+
+Latest handoff: `docs/devlog/phase-5-6-7.md`.

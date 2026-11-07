@@ -280,10 +280,10 @@ function Insights({ r }: { r: NonNullable<ReturnType<typeof useEngine>["result"]
     <div className="relative border-t border-[#1e2033]/8 bg-[#fbfcff] p-3 sm:p-5">
       <Tabs defaultValue="analysis">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <TabsList className="h-11 w-full rounded-full bg-[#eef1fb] p-1 sm:w-auto">
-            <TabsTrigger value="analysis" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">What it measured</TabsTrigger>
-            <TabsTrigger value="stages" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">Every stage</TabsTrigger>
-            <TabsTrigger value="controller" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm">Quality check</TabsTrigger>
+          <TabsList className="h-11 w-full min-w-0 rounded-full bg-[#eef1fb] p-1 sm:w-auto">
+            <TabsTrigger value="analysis" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm"><span className="sm:hidden">Measured</span><span className="hidden sm:inline">What it measured</span></TabsTrigger>
+            <TabsTrigger value="stages" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm"><span className="sm:hidden">Stages</span><span className="hidden sm:inline">Every stage</span></TabsTrigger>
+            <TabsTrigger value="controller" className="flex-1 rounded-full px-2 text-[13px] sm:px-4 sm:text-sm"><span className="sm:hidden">Quality</span><span className="hidden sm:inline">Quality check</span></TabsTrigger>
           </TabsList>
           <a
             href={r.output}
