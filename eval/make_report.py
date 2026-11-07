@@ -19,14 +19,14 @@ UNPAIRED = ["DICM", "LIME", "MEF", "NPE", "VV"]
 # (display name, method string, approach)
 # The package's default hybrid (chosen on LSRW val_b before the LSRW test run; see
 # docs/devlog/protocol-decision.md). Used for the unpaired real-world table.
-DEFAULT_HYBRID = os.environ.get("RESENH_REPORT_DEFAULT", "hybrid:retinexformer-lolv2-real")
+DEFAULT_HYBRID = os.environ.get("RESENH_REPORT_DEFAULT", "hybrid:runs/general_light/last.pth")
 
 MAIN_ROWS = [
     ("Classical only: adaptive Retinex + CLAHE + guided denoise (ours)", "classical", "classical"),
     ("Deep learning only: Retinexformer, official checkpoint", "net:retinexformer-{bench}", "DL"),
     ("**Hybrid pipeline, official backbone, `benchmark` preset (ours, as shipped)**",
      "hybrid-bench:retinexformer-{bench}", "hybrid"),
-    ("Hybrid pipeline, official backbone, `robust` preset (package default)",
+    ("Hybrid pipeline, official backbone, `robust` preset",
      "hybrid:retinexformer-{bench}", "hybrid"),
     ("Fine-tuned backbone with classical priors + GT-mean loss (ours, pre-registered)",
      "net:runs/{run}_light/last.pth", "DL + priors"),
@@ -154,6 +154,8 @@ def main():
          "net:runs/general_light/last.pth"),
         ("resenh generalist, hybrid pipeline (`benchmark` preset)",
          "hybrid-bench:runs/general_light/last.pth"),
+        ("**resenh generalist, hybrid pipeline (`robust` preset, package default)**",
+         "hybrid:runs/general_light/last.pth"),
         ("resenh hybrid, official LOL-v2-Real backbone (`benchmark` preset)",
          "hybrid-bench:retinexformer-lolv2-real"),
         ("resenh hybrid, official LOL-v2-Real backbone (`robust` preset)",

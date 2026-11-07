@@ -21,7 +21,7 @@
 | Classical only: adaptive Retinex + CLAHE + guided denoise (ours) | classical | **16.75** (15.32 to 18.12) | 0.7211 | 0.3554 | 4.22 | 517 | 0.73 | 0.696 |
 | Deep learning only: Retinexformer, official checkpoint | DL | **25.15** (23.63 to 26.58) | 0.8455 | 0.1314 | 2.97 | 1058 | 0.67 | 0.782 |
 | **Hybrid pipeline, official backbone, `benchmark` preset (ours, as shipped)** | hybrid | **25.13** (23.62 to 26.55) | 0.8454 | 0.1315 | 2.95 | 1565 | 0.67 | 0.782 |
-| Hybrid pipeline, official backbone, `robust` preset (package default) | hybrid | **25.13** (23.62 to 26.55) | 0.8454 | 0.1315 | 2.95 | 1544 | 0.67 | 0.782 |
+| Hybrid pipeline, official backbone, `robust` preset | hybrid | **25.13** (23.62 to 26.55) | 0.8454 | 0.1315 | 2.95 | 1544 | 0.67 | 0.782 |
 | Fine-tuned backbone with classical priors + GT-mean loss (ours, pre-registered) | DL + priors | **23.35** (21.97 to 24.69) | 0.8503 | 0.1219 | 3.07 | 1089 | 0.59 | 0.793 |
 | Hybrid pipeline, fine-tuned backbone, `benchmark` preset (ours, pre-registered) | hybrid | **23.33** (21.97 to 24.67) | 0.8502 | 0.1221 | 3.07 | 2239 | 0.59 | 0.792 |
 | Hybrid pipeline, fine-tuned backbone, `robust` preset | hybrid | **23.33** (21.97 to 24.67) | 0.8502 | 0.1221 | 3.07 | 1960 | 0.59 | 0.792 |
@@ -33,7 +33,7 @@
 | Classical only: adaptive Retinex + CLAHE + guided denoise (ours) | classical | **17.44** (16.96 to 17.91) | 0.7237 | 0.4172 | 4.83 | 550 | 0.69 | 0.714 |
 | Deep learning only: Retinexformer, official checkpoint | DL | **22.79** (22.09 to 23.50) | 0.8397 | 0.1707 | 3.59 | 1053 | 0.64 | 0.794 |
 | **Hybrid pipeline, official backbone, `benchmark` preset (ours, as shipped)** | hybrid | **22.82** (22.11 to 23.55) | 0.8395 | 0.1710 | 3.59 | 1788 | 0.64 | 0.793 |
-| Hybrid pipeline, official backbone, `robust` preset (package default) | hybrid | **22.73** (22.01 to 23.48) | 0.8359 | 0.1742 | 3.57 | 1851 | 0.64 | 0.792 |
+| Hybrid pipeline, official backbone, `robust` preset | hybrid | **22.73** (22.01 to 23.48) | 0.8359 | 0.1742 | 3.57 | 1851 | 0.64 | 0.792 |
 | Fine-tuned backbone with classical priors + GT-mean loss (ours, pre-registered) | DL + priors | **20.82** (19.84 to 21.78) | 0.8522 | 0.1391 | 3.59 | 1006 | 0.58 | 0.826 |
 | Hybrid pipeline, fine-tuned backbone, `benchmark` preset (ours, pre-registered) | hybrid | **20.84** (19.85 to 21.81) | 0.8520 | 0.1395 | 3.59 | 2390 | 0.58 | 0.825 |
 | Hybrid pipeline, fine-tuned backbone, `robust` preset | hybrid | **20.66** (19.63 to 21.64) | 0.8477 | 0.1454 | 3.58 | 1805 | 0.57 | 0.824 |
@@ -45,7 +45,7 @@
 | Classical only: adaptive Retinex + CLAHE + guided denoise (ours) | classical | **16.83** (16.20 to 17.48) | 0.7580 | 0.3061 | 4.14 | 723 | 0.95 | 0.851 |
 | Deep learning only: Retinexformer, official checkpoint | DL | **25.67** (24.65 to 26.64) | 0.9295 | 0.0592 | 3.94 | 972 | 0.98 | 0.960 |
 | **Hybrid pipeline, official backbone, `benchmark` preset (ours, as shipped)** | hybrid | **25.35** (24.37 to 26.30) | 0.9276 | 0.0627 | 3.94 | 1976 | 0.98 | 0.956 |
-| Hybrid pipeline, official backbone, `robust` preset (package default) | hybrid | **24.80** (23.83 to 25.74) | 0.8981 | 0.0982 | 3.86 | 2061 | 0.89 | 0.942 |
+| Hybrid pipeline, official backbone, `robust` preset | hybrid | **24.80** (23.83 to 25.74) | 0.8981 | 0.0982 | 3.86 | 2061 | 0.89 | 0.942 |
 | Fine-tuned backbone with classical priors + GT-mean loss (ours, pre-registered) | DL + priors | **25.69** (24.55 to 26.82) | 0.9364 | 0.0499 | 3.97 | 970 | 1.00 | 0.964 |
 | Hybrid pipeline, fine-tuned backbone, `benchmark` preset (ours, pre-registered) | hybrid | **25.13** (24.00 to 26.23) | 0.9318 | 0.0567 | 3.96 | 1763 | 0.99 | 0.960 |
 | Hybrid pipeline, fine-tuned backbone, `robust` preset | hybrid | **24.57** (23.51 to 25.64) | 0.9050 | 0.0917 | 3.91 | 1816 | 0.90 | 0.945 |
@@ -72,18 +72,19 @@ Notes: the higher numbers that circulate for these methods (27–31 dB) use GT-m
 | Method | PSNR ↑ | SSIM ↑ | LPIPS ↓ | NIQE ↓ | Noise ratio | EPI ↑ |
 |---|---|---|---|---|---|---|
 | Classical only | 16.15 | 0.5297 | 0.4202 | 3.93 | 0.67 | 0.009 |
-| DL only: Retinexformer LOL-v2-Real checkpoint | (not run) | | | | | |
-| resenh generalist (fine-tuned on LOL + LSRW train), network alone | (not run) | | | | | |
-| resenh generalist, hybrid pipeline (`benchmark` preset) | (not run) | | | | | |
-| resenh hybrid, official LOL-v2-Real backbone (`benchmark` preset) | (not run) | | | | | |
-| resenh hybrid, official LOL-v2-Real backbone (`robust` preset) | (not run) | | | | | |
+| DL only: Retinexformer LOL-v2-Real checkpoint | 17.19 | 0.5093 | 0.3315 | 3.29 | 0.47 | 0.009 |
+| resenh generalist (fine-tuned on LOL + LSRW train), network alone | 19.32 | 0.5857 | 0.3551 | 3.48 | 0.19 | 0.017 |
+| resenh generalist, hybrid pipeline (`benchmark` preset) | 19.26 | 0.5849 | 0.3558 | 3.45 | 0.20 | 0.017 |
+| **resenh generalist, hybrid pipeline (`robust` preset, package default)** | 19.26 | 0.5843 | 0.3607 | 3.46 | 0.20 | 0.017 |
+| resenh hybrid, official LOL-v2-Real backbone (`benchmark` preset) | 17.30 | 0.5146 | 0.3315 | 3.26 | 0.46 | 0.009 |
+| resenh hybrid, official LOL-v2-Real backbone (`robust` preset) | 17.32 | 0.5151 | 0.3343 | 3.27 | 0.45 | 0.009 |
 
 ## Latency (`resenh bench`, end to end incl. analysis and post-processing)
 
 | Mode | Device | Resolution | Mean (s) | ms/MP |
 |---|---|---|---|---|
-| classical | cpu | 1155x866 | 0.472 | 472 |
-| dl | cpu | 1155x866 | 3.324 | 3323 |
-| hybrid | cpu | 1155x866 | 4.547 | 4546 |
+| classical | cpu | 1155x866 | 0.365 | 365 |
+| dl | cpu | 1155x866 | 3.775 | 3774 |
+| hybrid | cpu | 1155x866 | 4.991 | 4990 |
 
 See `docs/ablation.md` for the ablation study and `docs/failures.md` for the failure analysis.

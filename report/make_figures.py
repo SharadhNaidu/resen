@@ -41,7 +41,10 @@ for ex in ("lime_1", "vv_5", "dicm_3"):
     x = load_image(f"site/public/examples/{ex}.jpg")
     save(x, f"{ex}_input")
     for mode in ("classical", "dl", "hybrid"):
-        save(resenh.enhance(x, mode=mode).image, f"{ex}_{mode}")
+        # Figure 2 (dicm_3) shows the controller with the official backbone, so the "network
+        # alone" panel and the hybrid's network candidate are the same model.
+        kw = {"model": "retinexformer-lolv2-real"} if ex == "dicm_3" and mode == "hybrid" else {}
+        save(resenh.enhance(x, mode=mode, **kw).image, f"{ex}_{mode}")
 
 # 3) intermediate states for one photo
 r = resenh.enhance(load_image("site/public/examples/lime_1.jpg"), mode="hybrid")

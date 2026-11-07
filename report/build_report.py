@@ -175,7 +175,8 @@ def guard_chart() -> str:
 
     import resenh  # noqa: PLC0415
 
-    r = resenh.enhance(str(ROOT / "site/public/examples/dicm_3.jpg"), mode="hybrid")
+    r = resenh.enhance(str(ROOT / "site/public/examples/dicm_3.jpg"), mode="hybrid",
+                       model="retinexformer-lolv2-real")
     g = r.decision["guards"]
     w = r.decision["weights"]
     items = [("Newly clipped highlights", "clipped", "{:.1%}"), ("Colour shift vs input", "chroma_shift", "{:.2f}"),
@@ -238,7 +239,8 @@ def main():
 
     lsrw = [(n, res(m, "lsrw")) for n, m in [
         ("Classical", "classical"), ("Deep learning only", "net:retinexformer-lolv2-real"),
-        ("Hybrid (ours)", "hybrid-bench:retinexformer-lolv2-real")]]
+        ("Hybrid, official backbone", "hybrid:retinexformer-lolv2-real"),
+        ("Hybrid, general model (default)", "hybrid:runs/general_light/last.pth")]]
     lsrw_rows = "".join(f"<tr><td>{n}</td><td class='num'>{fmt(r_ and r_['psnr'])}</td>"
                         f"<td class='num'>{fmt(r_ and r_['ssim'], 3)}</td><td class='num'>{fmt(r_ and r_['lpips'], 3)}</td></tr>"
                         for n, r_ in lsrw if r_)
@@ -255,7 +257,7 @@ def main():
         "{{MAIN_ROWS}}": main_rows, "{{GUARDS}}": guard_chart(), "{{LSRW_ROWS}}": lsrw_rows,
         "{{COMMIT}}": commit, "{{REPO}}": REPO,
         "{{UNP}}": "".join(f"<tr><td>{d}</td><td class='num'>{a:.2f}</td><td class='num'>{c:.2f}</td></tr>" for d, a, c in unp),
-        "{{CPU_H}}": f"{bench['hybrid']['mean_s']:.1f}", "{{CPU_C}}": f"{bench['classical']['mean_s']:.2f}",
+        "{{CPU_H}}": f"{bench['hybrid']['mean_s']:.1f}", "{{GPU_C}}": f"{gpu['classical']['mean_s']:.2f}", "{{GPU_D}}": f"{gpu['dl']['mean_s']:.2f}", "{{GPU_H}}": f"{gpu['hybrid']['mean_s']:.1f}", "{{CPU_C}}": f"{bench['classical']['mean_s']:.2f}",
     }
     for k, v in subs.items():
         html = html.replace(k, v)

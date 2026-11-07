@@ -67,7 +67,7 @@
   .strip { display: grid; gap: 1.6mm; }
   .strip.c5 { grid-template-columns: repeat(5, 1fr); }
   .strip.c4 { grid-template-columns: repeat(4, 1fr); }
-  .strip.c6 { grid-template-columns: repeat(3, 1fr); }
+  .strip.c6 { grid-template-columns: repeat(6, 1fr); }
   .strip img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; display: block; }
   .strip .lab { font-size: 8pt; color: var(--muted); margin-top: 1.2mm; }
   .strip .lab b { color: var(--ink); font-weight: 600; }
@@ -182,7 +182,7 @@
       <tbody>{{GUARDS}}</tbody>
     </table>
   </div>
-  <figcaption><b>Figure 2.</b> The controller at work on an unseen photo (DICM). The network amplifies noise ×5 and tints the sky. The controller measures this, gives the classical branch almost all the weight, and caps the gain because the input is not truly dark.</figcaption>
+  <figcaption><b>Figure 2.</b> The controller at work on an unseen photo (DICM), with the official LOL-v2-Real backbone as the network candidate. The network amplifies noise ×5 and tints the sky. The controller measures this, gives the classical branch almost all the weight, and caps the gain because the input is not truly dark.</figcaption>
 </figure>
 </section>
 
@@ -199,7 +199,7 @@
   {{BARS}}
   <figcaption><b>Figure 3.</b> PSNR on the three standard test sets (15, 100 and 100 pairs). The hybrid matches the network within the confidence interval on every set (±0.7 dB on LOL-v2, ±1.5 dB on LOL-v1). The classical branch trails by 6–9 dB, but it never invents content, which is what makes it a useful fallback.</figcaption>
 </figure>
-<p><b>Analysis.</b> Structural fidelity is decided by the network: it adds 5–9 dB PSNR and about 0.1 SSIM over the classical branch, and halves LPIPS. The controller costs essentially nothing on clean benchmark images (+0.03 dB on LOL-v2-Real), but its value appears on real photos (Figure 2). The classical branch is the fastest at {{CPU_C}} s per megapixel on a laptop CPU, and the full hybrid takes {{CPU_H}} s. In a laptop browser the hybrid finishes in about 6 s with WebGPU.</p>
+<p><b>Analysis.</b> Structural fidelity is decided by the network: it adds 5–9 dB PSNR and about 0.1 SSIM over the classical branch, and halves LPIPS. The controller costs essentially nothing on clean benchmark images (+0.03 dB on LOL-v2-Real), but its value appears on real photos (Figure 2). On an RTX 4070 laptop GPU a 1-megapixel photo takes {{GPU_C}} s classical, {{GPU_D}} s network-only and {{GPU_H}} s hybrid. The hybrid includes the classical branch and the priors, which run on the CPU. On the laptop CPU alone the hybrid takes {{CPU_H}} s. In a laptop browser the hybrid finishes in about 6 s with WebGPU.</p>
 <div class="two keep">
   <div>
     <h3 style="margin-top:2mm">Unseen camera: LSRW</h3>
@@ -241,20 +241,20 @@
 </figure>
 <figure>
   <div class="strip c6">
-    <div><img src="fig/stage_illumination.jpg" alt=""><div class="lab"><b>Illumination map</b> · max-RGB + guided filter</div></div>
-    <div><img src="fig/stage_gain_map.jpg" alt=""><div class="lab"><b>Gain map</b> · how much each pixel is lifted</div></div>
-    <div><img src="fig/stage_retinex.jpg" alt=""><div class="lab"><b>Retinex output</b> · before denoise and CLAHE</div></div>
-    <div><img src="fig/stage_classical.jpg" alt=""><div class="lab"><b>Classical branch</b> · final</div></div>
-    <div><img src="fig/stage_network.jpg" alt=""><div class="lab"><b>Network branch</b></div></div>
+    <div><img src="fig/stage_illumination.jpg" alt=""><div class="lab"><b>Illumination</b></div></div>
+    <div><img src="fig/stage_gain_map.jpg" alt=""><div class="lab"><b>Gain map</b></div></div>
+    <div><img src="fig/stage_retinex.jpg" alt=""><div class="lab"><b>Retinex</b></div></div>
+    <div><img src="fig/stage_classical.jpg" alt=""><div class="lab"><b>Classical</b></div></div>
+    <div><img src="fig/stage_network.jpg" alt=""><div class="lab"><b>Network</b></div></div>
     <div class="ours"><img src="fig/lime_1_hybrid.jpg" alt=""><div class="lab"><b>Fused result</b></div></div>
   </div>
-  <figcaption><b>Figure 6.</b> Intermediate states for the LIME photo, as returned by <code>res.stages</code> and shown in the web demo's “Every stage” tab.</figcaption>
+  <figcaption><b>Figure 6.</b> Intermediate states for the LIME photo: the illumination map (max-RGB refined by a guided filter), the per-pixel gain, the Retinex output before denoising and CLAHE, both branch outputs and the fused result, as returned by <code>res.stages</code> and shown in the web demo's “Every stage” tab.</figcaption>
 </figure>
 
 <h3>3.3 Ablation study</h3>
 <figure class="frame">
   {{ABL}}
-  <figcaption><b>Figure 7.</b> PSNR change when one component is switched on, with everything else held fixed. The training ablations are 3,000-iteration fine-tunes from the same initialisation. The GT-mean loss improves SSIM and LPIPS but costs plain PSNR, so the shipped model keeps the official backbone. The noise gate trades 0.55 dB on clean images for 4.3 dB on noisy ones; this is why the package offers a <code>robust</code> preset (the default) and a <code>benchmark</code> preset.</figcaption>
+  <figcaption><b>Figure 7.</b> PSNR change when one component is switched on, with everything else held fixed. The training ablations are 3,000-iteration fine-tunes from the same initialisation. The GT-mean loss improves SSIM and LPIPS but costs plain PSNR, so the LOL benchmark rows use the official backbone. For real photos the package defaults to the generalist model, which scored 1.5 dB higher on LSRW validation. The noise gate trades 0.55 dB on clean images for 4.3 dB on noisy ones; this is why the package offers a <code>robust</code> preset (the default) and a <code>benchmark</code> preset.</figcaption>
 </figure>
 </section>
 
