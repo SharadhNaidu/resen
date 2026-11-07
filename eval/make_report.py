@@ -131,6 +131,45 @@ def main():
                      f"{fmt(n and n['niqe'], 2)} | {fmt(h and h['noise_ratio'], 2)} | "
                      f"{fmt(h and h['epi'], 3)} |")
         L.append("")
+    lsrw = [(n, load(m, "lsrw")) for n, m in [
+        ("Classical only", "classical"),
+        ("DL only: Retinexformer LOL-v2-Real checkpoint", "net:retinexformer-lolv2-real"),
+        ("resenh generalist, network alone", "net:runs/general_light/last.pth"),
+        ("**resenh generalist, full hybrid (robust)**", "hybrid:runs/general_light/last.pth")]]
+    if any(v for _, v in lsrw):
+        L += ["## Generalisation: LSRW test (50 pairs, different cameras; no model trained on LSRW "
+              "test)", "", "| Method | PSNR ↑ | SSIM ↑ | LPIPS ↓ | NIQE ↓ | Noise ratio | EPI ↑ |",
+              "|---|---|---|---|---|---|---|"]
+        for n, v in lsrw:
+            L.append(f"| {n} | " + (" | ".join([fmt(v['psnr'], 2), fmt(v['ssim'], 4),
+                     fmt(v['lpips'], 4), fmt(v['niqe'], 2), fmt(v['noise_ratio'], 2),
+                     fmt(v['epi'], 3)]) if v else "(not run) | | | | |") + " |")
+        L.append("")
+    st = Path("outputs/stress.json")
+    if st.exists():
+        S = json.loads(st.read_text())
+        kinds = sorted({k.split("|")[0] for k in S})
+        meths = list(dict.fromkeys(k.split("|", 1)[1] for k in S))
+        L += ["## Stress tests (LOL-v2-Real test, harder synthetic degradations; `eval/stress.py`)",
+              "", "PSNR ↑ / SSIM ↑ / noise ratio / EPI ↑.", "",
+              "| Method | " + " | ".join(kinds) + " |", "|---" * (len(kinds) + 1) + "|"]
+        for m in meths:
+            cells = []
+            for k in kinds:
+                v = S.get(f"{k}|{m}")
+                cells.append("-" if not v else f"{v['psnr']:.2f} / {v['ssim']:.3f} / "
+                             f"{v['noise_ratio']:.2f} / {v['epi']:.3f}")
+            L.append(f"| `{m}` | " + " | ".join(cells) + " |")
+        L.append("")
+    bf = Path("outputs/bench.json")
+    if bf.exists():
+        B = json.loads(bf.read_text())
+        L += ["## Latency (`resenh bench`, end to end incl. analysis and post-processing)", "",
+              "| Mode | Device | Resolution | Mean (s) | ms/MP |", "|---|---|---|---|---|"]
+        for r in B:
+            L.append(f"| {r['mode']} | {r['device']} | {r['size']} | {r['mean_s']:.3f} | "
+                     f"{r['ms_per_mp']:.0f} |")
+        L.append("")
     tta = [load("hybrid-bench:runs/{run}_light/last.pth", b, tta=True) for b, _ in BENCHES]
     if any(tta):
         L += ["## Appendix: ×8 self-ensemble (TTA), research row", "",

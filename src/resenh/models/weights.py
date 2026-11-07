@@ -10,7 +10,7 @@ import hashlib
 import os
 from pathlib import Path
 
-RELEASE = "https://github.com/SharadhNaidu/resen/releases/download/weights-v1"
+RELEASE = "https://huggingface.co/SharadhNaiduTrains/resenh/resolve/main"
 
 REGISTRY: dict[str, dict] = {
     # official Retinexformer checkpoints (Cai et al., ICCV 2023, MIT licence)
@@ -20,7 +20,7 @@ REGISTRY: dict[str, dict] = {
     # resenh hybrid models (filled in after training; sha256 pinned at release time)
     "resenh-light-lolv1": {"file": "resenh_light_lolv1.pth", "sha256": None, "priors": True},
     "resenh-light-lolv2-real": {"file": "resenh_light_lolv2_real.pth", "sha256": None, "priors": True},
-    "resenh-light-lolv2-syn": {"file": "resenh_light_lolv2_syn.pth", "sha256": None, "priors": True},
+    "resenh-light-lolv2-syn": {"file": "resenh_light_lolv2_syn.pth", "sha256": "a773a0c72fcd2b98590fb54cd3b16a2faa2736c2fb5bdcb60821e627fb30989e", "priors": True},
     "resenh-light-general": {"file": "resenh_light_general.pth", "sha256": None, "priors": True},
 }
 

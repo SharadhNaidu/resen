@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -23,12 +24,15 @@ MODE_MAP = {
     "Deep learning only": "dl",
     "Classical only": "classical",
 }
-EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "app" / "examples"
+
+EXAMPLES_DIR = Path(os.environ.get("RESENH_EXAMPLES",
+                                   Path(__file__).resolve().parents[2] / "app" / "examples"))
 
 
 @_gpu
 def _run(img, mode, tta):
-    return resenh.enhance(img, mode=mode, tta=tta, max_side=1280)
+    return resenh.enhance(img, mode=mode, tta=tta,
+                          max_side=int(os.environ.get("RESENH_MAX_SIDE", 1280)))
 
 
 def process(img, mode_label, tta):

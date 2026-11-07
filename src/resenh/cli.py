@@ -55,6 +55,7 @@ def _cmd_bench(a) -> int:
     rng = np.random.default_rng(0)
     h = a.size * 3 // 4
     img = (rng.random((h, a.size, 3)) * 0.15).astype(np.float32)
+    rows = []
     for mode in a.modes:
         resenh.enhance(img, mode=mode, device=a.device, max_side=a.max_side)  # warm-up
         ts = []
@@ -65,6 +66,20 @@ def _cmd_bench(a) -> int:
         mp = img.shape[0] * img.shape[1] / 1e6
         print(f"{mode:10s} {a.size}x{h} ({mp:.2f} MP) device={a.device}: "
               f"{np.median(ts):.3f}s median, {np.median(ts) / mp * 1000:.0f} ms/MP")
+        from resenh.models.runner import pick_device  # noqa: PLC0415
+
+        rows.append({"mode": mode, "device": pick_device(a.device) if mode != "classical" else "cpu",
+                     "size": f"{a.size}x{h}", "mean_s": float(np.median(ts)),
+                     "ms_per_mp": float(np.median(ts) / mp * 1000)})
+    if a.json:
+        import json  # noqa: PLC0415
+        from pathlib import Path  # noqa: PLC0415
+
+        f = Path(a.json)
+        old = json.loads(f.read_text()) if f.exists() else []
+        keep = {(r["mode"], r["device"], r["size"]) for r in rows}
+        old = [r for r in old if (r["mode"], r["device"], r["size"]) not in keep]
+        f.write_text(json.dumps(old + rows, indent=1))
     return 0
 
 
@@ -97,6 +112,7 @@ def main(argv=None) -> int:
     b.add_argument("--size", type=int, default=1155, help="width; height = 3/4 (default ~1 MP)")
     b.add_argument("--max-side", type=int, default=1280)
     b.add_argument("--repeat", type=int, default=3)
+    b.add_argument("--json", metavar="FILE", help="append results to a JSON file")
     b.set_defaults(func=_cmd_bench)
 
     p = sub.add_parser("app", help="launch the Gradio web app")
